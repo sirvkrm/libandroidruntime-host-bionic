@@ -1,0 +1,240 @@
+diff --git a/system/core/libutils/misc.cpp b/system/core/libutils/misc.cpp
+index e1b5f01..dc0f1ba 100644
+--- a/system/core/libutils/misc.cpp
++++ b/system/core/libutils/misc.cpp
+@@ -23,7 +23,7 @@
+ #include <log/log.h>
+ #include <utils/Vector.h>
+ 
+-#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__)
++#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__) && !defined(LAYOUTLIB_HOST)
+ #include <dlfcn.h>
+ #include <vndksupport/linker.h>
+ #endif
+@@ -70,7 +70,7 @@ void add_sysprop_change_callback(sysprop_change_callback cb, int priority) {
+ void add_sysprop_change_callback(sysprop_change_callback, int) {}
+ #endif
+ 
+-#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__)
++#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__) && !defined(LAYOUTLIB_HOST)
+ void (*get_report_sysprop_change_func())() {
+     void (*func)() = nullptr;
+     void* handle = android_load_sphal_library("libutils.so", RTLD_NOW);
+@@ -85,7 +85,7 @@ void (*get_report_sysprop_change_func())() {
+ void report_sysprop_change() {
+     do_report_sysprop_change();
+ 
+-#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__)
++#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__) && !defined(LAYOUTLIB_HOST)
+     // libutils.so is double loaded; from the default namespace and from the
+     // 'sphal' namespace. Redirect the sysprop change event to the other instance
+     // of libutils.so loaded in the 'sphal' namespace so that listeners attached
+diff --git a/system/libhidl/transport/ServiceManagement.cpp b/system/libhidl/transport/ServiceManagement.cpp
+index 84f7b67..d304b40 100644
+--- a/system/libhidl/transport/ServiceManagement.cpp
++++ b/system/libhidl/transport/ServiceManagement.cpp
+@@ -48,7 +48,7 @@
+ #include <hwbinder/HidlSupport.h>
+ #include <hwbinder/IPCThreadState.h>
+ #include <hwbinder/Parcel.h>
+-#if !defined(__ANDROID_RECOVERY__) && defined(__ANDROID__)
++#if !defined(__ANDROID_RECOVERY__) && defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <vndksupport/linker.h>
+ #endif
+ 
+@@ -537,8 +537,10 @@ struct PassthroughServiceManager : IServiceManager1_1 {
+                 if (kIsRecovery || path == HAL_LIBRARY_PATH_SYSTEM) {
+                     handle = dlopen(fullPath.c_str(), dlMode);
+                 } else {
+-#if !defined(__ANDROID_RECOVERY__) && defined(__ANDROID__)
++#if !defined(__ANDROID_RECOVERY__) && defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+                     handle = android_load_sphal_library(fullPath.c_str(), dlMode);
++#else
++                    handle = dlopen(fullPath.c_str(), dlMode);
+ #endif
+                 }
+ 
+diff --git a/system/logging/liblog/logger_read.cpp b/system/logging/liblog/logger_read.cpp
+index 4675c60..5d8945b 100644
+--- a/system/logging/liblog/logger_read.cpp
++++ b/system/logging/liblog/logger_read.cpp
+@@ -97,7 +97,7 @@ int android_logger_list_read(struct logger_list* logger_list, struct log_msg* lo
+ 
+   int ret = 0;
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+   if (logger_list->mode & ANDROID_LOG_PSTORE) {
+     ret = PmsgRead(logger_list, log_msg);
+   } else {
+@@ -137,7 +137,7 @@ void android_logger_list_free(struct logger_list* logger_list) {
+     return;
+   }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+   if (logger_list->mode & ANDROID_LOG_PSTORE) {
+     PmsgClose(logger_list);
+   } else {
+diff --git a/system/logging/liblog/logger_write.cpp b/system/logging/liblog/logger_write.cpp
+index 2e6b9e8..52fd100 100644
+--- a/system/logging/liblog/logger_write.cpp
++++ b/system/logging/liblog/logger_write.cpp
+@@ -41,7 +41,7 @@
+ #include "logger.h"
+ #include "uio.h"
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include "logd_writer.h"
+ #endif
+ 
+@@ -65,7 +65,7 @@ using android::base::ErrnoRestorer;
+ 
+ #define LOG_BUF_SIZE 1024
+ 
+-#if defined(__ANDROID__)
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ static int check_log_uid_permissions() {
+   uid_t uid = getuid();
+ 
+@@ -112,7 +112,7 @@ static int check_log_uid_permissions() {
+  * Release any logger resources. A new log write will immediately re-acquire.
+  */
+ void __android_log_close() {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+   LogdClose();
+ #endif
+ }
+@@ -164,7 +164,7 @@ int32_t __android_log_get_minimum_priority() {
+   return minimum_log_priority;
+ }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ static __android_logger_function logger_function = __android_log_logd_logger;
+ #else
+ static __android_logger_function logger_function = __android_log_stderr_logger;
+@@ -193,7 +193,7 @@ void __android_log_call_aborter(const char* abort_message) {
+   aborter_function(abort_message);
+ }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ static int write_to_log(log_id_t log_id, struct iovec* vec, size_t nr,
+                         const struct timespec* timestamp = nullptr) {
+   if (log_id == LOG_ID_KERNEL) {
+diff --git a/system/libbase/logging.cpp b/system/libbase/logging.cpp
+index 9204c0c..13019be 100644
+--- a/system/libbase/logging.cpp
++++ b/system/libbase/logging.cpp
+@@ -193,7 +193,7 @@ static int32_t LogSeverityToPriority(LogSeverity severity) {
+ }
+ 
+ static LogFunction& Logger() {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+   static auto& logger = *new LogFunction(LogdLogger());
+ #else
+   static auto& logger = *new LogFunction(StderrLogger);
+diff --git a/frameworks/native/libs/binder/IServiceManager.cpp b/frameworks/native/libs/binder/IServiceManager.cpp
+index 0a564aa..a1cd59c 100644
+--- a/frameworks/native/libs/binder/IServiceManager.cpp
++++ b/frameworks/native/libs/binder/IServiceManager.cpp
+@@ -53,7 +53,7 @@
+ #include "ServiceManagerHost.h"
+ #endif
+ 
+-#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__) && !defined(__ANDROID_NATIVE_BRIDGE__)
++#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__) && !defined(__ANDROID_NATIVE_BRIDGE__) && !defined(LAYOUTLIB_HOST)
+ #include <android/apexsupport.h>
+ #include <vndksupport/linker.h>
+ #endif
+@@ -555,7 +555,7 @@ bool checkPermission(const String16& permission, pid_t pid, uid_t uid, bool logP
+ 
+ void* openDeclaredPassthroughHal(const String16& interface, const String16& instance, int flag) {
+ #if defined(__ANDROID__) && !defined(__ANDROID_VENDOR__) && !defined(__ANDROID_RECOVERY__) && \
+-        !defined(__ANDROID_NATIVE_BRIDGE__)
++        !defined(__ANDROID_NATIVE_BRIDGE__) && !defined(LAYOUTLIB_HOST)
+     sp<IServiceManager> sm = defaultServiceManager();
+     String16 name = interface + String16("/") + instance;
+     if (!sm->isDeclared(name)) {
+diff --git a/frameworks/native/libs/binder/ProcessState.cpp b/frameworks/native/libs/binder/ProcessState.cpp
+index dd4444b..9ab20f5 100644
+--- a/frameworks/native/libs/binder/ProcessState.cpp
++++ b/frameworks/native/libs/binder/ProcessState.cpp
+@@ -49,7 +49,7 @@
+ #define DEFAULT_MAX_BINDER_THREADS 15
+ #define DEFAULT_ENABLE_ONEWAY_SPAM_DETECTION 1
+ 
+-#if defined(__ANDROID__) || defined(__Fuchsia__)
++#if (defined(__ANDROID__) || defined(__Fuchsia__)) && !defined(LAYOUTLIB_HOST)
+ #define EXPECT_BINDER_OPEN_SUCCESS
+ #endif
+ 
+diff --git a/frameworks/native/libs/binder/Utils.h b/frameworks/native/libs/binder/Utils.h
+index 1421102..aa0ee1f 100644
+--- a/frameworks/native/libs/binder/Utils.h
++++ b/frameworks/native/libs/binder/Utils.h
+@@ -86,7 +86,7 @@ constexpr size_t countof(T (&)[N]) {
+ 
+ // avoid optimizations
+ inline void zeroMemory(uint8_t* data, size_t size) {
+-#ifdef __BIONIC__
++#if defined(__BIONIC__) && __ANDROID_API__ >= 35
+     memset_explicit(data, 0, size);
+ #else
+     // Assembly marking to prevent any optimizing compiler from not actually clearing the buffer,
+diff --git a/frameworks/native/libs/binder/ndk/stability.cpp b/frameworks/native/libs/binder/ndk/stability.cpp
+index a9b18ee..5f7d382 100644
+--- a/frameworks/native/libs/binder/ndk/stability.cpp
++++ b/frameworks/native/libs/binder/ndk/stability.cpp
+@@ -31,7 +31,7 @@ using ::android::internal::Stability;
+ #error libbinder_ndk should only be built in a system context
+ #endif
+ 
+-#ifdef __ANDROID_NDK__
++#if defined(__ANDROID_NDK__) && !defined(LAYOUTLIB_HOST)
+ #error libbinder_ndk should only be built in a system context
+ #endif
+ 
+diff --git a/system/libhwbinder/Utils.h b/system/libhwbinder/Utils.h
+index ea0d488..98a8eaf 100644
+--- a/system/libhwbinder/Utils.h
++++ b/system/libhwbinder/Utils.h
+@@ -22,7 +22,12 @@
+ namespace android::hardware {
+ 
+ inline void zeroMemory(uint8_t* data, size_t size) {
++#if defined(__BIONIC__) && __ANDROID_API__ >= 35
+     memset_explicit(data, 0, size);
++#else
++    memset(data, 0, size);
++    __asm__ __volatile__("" : : "r"(data) : "memory");
++#endif
+ }
+ 
+ }   // namespace android::hardware
+diff --git a/system/incremental_delivery/incfs/util/map_ptr.cpp b/system/incremental_delivery/incfs/util/map_ptr.cpp
+index cf76ec2..58e5ae6 100644
+--- a/system/incremental_delivery/incfs/util/map_ptr.cpp
++++ b/system/incremental_delivery/incfs/util/map_ptr.cpp
+@@ -18,7 +18,7 @@
+ #include <android-base/stringprintf.h>
+ #include <utils/FileMap.h>
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include "incfs_inline.h"
+ #endif
+ 
+@@ -61,7 +61,7 @@ std::optional<base::MappedFile> IncFsFileMap::take_data() && {
+     return std::move(map_);
+ }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ static bool IsVerificationEnabled(int fd) {
+     return isIncFsFd(fd) && isFullyLoaded(fd) != LoadingState::Full;
+ }

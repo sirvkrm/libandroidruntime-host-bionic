@@ -8,9 +8,9 @@ set(TARGET_PREBUILTS "${REPO_ROOT}/build/target-libs")
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS ON) # gnu++20 by default, overridden per-target where needed
+set(CMAKE_CXX_EXTENSIONS ON) # gnu++23 by default, overridden per-target where needed
 
 # Keep __ANDROID__ defined for NDK Bionic libc & libc++ STL headers;
 # LAYOUTLIB_HOST distinguishes Termux host-profile builds from Android OS device HALs.
