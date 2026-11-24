@@ -1,0 +1,201 @@
+diff --git a/logging.cpp b/logging.cpp
+index 9204c0c..13019be 100644
+--- a/logging.cpp
++++ b/logging.cpp
+@@ -193,7 +193,7 @@ static int32_t LogSeverityToPriority(LogSeverity severity) {
+ }
+ 
+ static LogFunction& Logger() {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+   static auto& logger = *new LogFunction(LogdLogger());
+ #else
+   static auto& logger = *new LogFunction(StderrLogger);
+diff --git a/properties.cpp b/properties.cpp
+index dd798b3..c3f2b25 100644
+--- a/properties.cpp
++++ b/properties.cpp
+@@ -21,8 +21,11 @@
+ #endif
+ 
+ #include <algorithm>
++#include <atomic>
+ #include <chrono>
++#include <condition_variable>
+ #include <limits>
++#include <mutex>
+ #include <set>
+ #include <string>
+ 
+@@ -31,16 +34,17 @@
+ #include <android-base/strings.h>
+ #include <android-base/thread_annotations.h>
+ 
+-#if !defined(__BIONIC__)
++#if !defined(__BIONIC__) || defined(LAYOUTLIB_HOST)
+ 
+ // Here lies a rudimentary implementation of system properties for non-Bionic
+-// platforms. We are using weak symbols here because we want to allow
+-// downstream users of libbase to override with their own implementation.
+-// For example, on Ravenwood (host-side testing for platform development)
+-// we'd love to be able to fully control system properties exposed to tests,
+-// so we reimplement the entire system properties API there.
+-
+-#if defined(__linux__)
++// platforms (and for LAYOUTLIB_HOST on host-Bionic/Termux so in-process
++// Layoutlib properties do not attempt to IPC with /dev/socket/property_service
++// or collide with device ro.* properties).
++// We are using weak symbols on non-Bionic Linux because downstream users of
++// libbase may override them; under LAYOUTLIB_HOST they are strong symbols inside
++// the Layoutlib DSO so libc's device property accessors are superseded.
++
++#if defined(__linux__) && !defined(LAYOUTLIB_HOST)
+ // Weak symbols are not supported on Windows, and to prevent unnecessary
+ // complications, we strictly limit the use of weak symbols to Linux.
+ #define SYSPROP_WEAK __attribute__((weak))
+@@ -48,14 +52,16 @@
+ #define SYSPROP_WEAK
+ #endif
+ 
++#ifndef PROP_VALUE_MAX
+ #define PROP_VALUE_MAX 92
++#endif
+ 
+ struct prop_info {
+   std::string key;
+   mutable std::string value;
+   mutable uint32_t serial;
+ 
+-  prop_info(const char* key, const char* value) : key(key), value(value), serial(0) {}
++  prop_info(const char* key, const char* value) : key(key), value(value), serial(1) {}
+ };
+ 
+ struct prop_info_cmp {
+@@ -73,13 +79,21 @@ class HostProperties {
+     bool read_only = !strncmp(key, "ro.", 3);
+     if (!read_only && strlen(value) >= PROP_VALUE_MAX) return -1;
+ 
+-    std::lock_guard lock(lock_);
+-    auto [it, success] = properties_.emplace(key, value);
+-    if (read_only) return success ? 0 : -1;
+-    if (!success) {
+-      it->value = value;
+-      ++it->serial;
++    {
++      std::lock_guard lock(lock_);
++      auto [it, success] = properties_.emplace(key, value);
++      if (read_only) {
++        if (!success) return -1;
++        area_serial_.fetch_add(1, std::memory_order_release);
++      } else {
++        if (!success) {
++          it->value = value;
++          ++it->serial;
++        }
++        area_serial_.fetch_add(1, std::memory_order_release);
++      }
+     }
++    cv_.notify_all();
+     return 0;
+   }
+ 
+@@ -110,8 +124,54 @@ class HostProperties {
+     callback(cookie, pi->key.c_str(), pi->value.c_str(), pi->serial);
+   }
+ 
++  int Read(const prop_info* pi, char* name, char* value) {
++    std::lock_guard lock(lock_);
++    if (name) {
++      snprintf(name, PROP_VALUE_MAX, "%s", pi->key.c_str());
++    }
++    snprintf(value, PROP_VALUE_MAX, "%s", pi->value.c_str());
++    return strlen(value);
++  }
++
++  uint32_t AreaSerial() const { return area_serial_.load(std::memory_order_acquire); }
++
++  uint32_t Serial(const prop_info* pi) {
++    std::lock_guard lock(lock_);
++    return pi ? pi->serial : 0;
++  }
++
++  bool Wait(const prop_info* pi, uint32_t old_serial, uint32_t* new_serial_ptr,
++            const struct timespec* relative_timeout) {
++    std::unique_lock lock(lock_);
++    auto current_serial = [&]() {
++      return pi ? pi->serial : area_serial_.load(std::memory_order_acquire);
++    };
++    auto pred = [&]() { return current_serial() != old_serial; };
++    if (!pred()) {
++      if (relative_timeout) {
++        auto dur = std::chrono::seconds(relative_timeout->tv_sec) +
++                   std::chrono::nanoseconds(relative_timeout->tv_nsec);
++        if (!cv_.wait_for(lock, dur, pred)) return false;
++      } else {
++        cv_.wait(lock, pred);
++      }
++    }
++    if (new_serial_ptr) *new_serial_ptr = current_serial();
++    return true;
++  }
++
++  int Foreach(void (*callback)(const prop_info*, void*), void* cookie) {
++    std::lock_guard lock(lock_);
++    for (const auto& entry : properties_) {
++      callback(&entry, cookie);
++    }
++    return 0;
++  }
++
+  private:
+   std::mutex lock_;
++  std::condition_variable cv_;
++  std::atomic<uint32_t> area_serial_{1};
+   std::set<prop_info, prop_info_cmp> properties_;
+ };
+ 
+@@ -120,6 +180,8 @@ static HostProperties& GetHostProperties() {
+   return properties;
+ }
+ 
++extern "C" {
++
+ SYSPROP_WEAK int __system_property_set(const char* key, const char* value) {
+   return GetHostProperties().Set(key, value);
+ }
+@@ -139,7 +201,34 @@ SYSPROP_WEAK void __system_property_read_callback(const prop_info* pi,
+   GetHostProperties().ReadCallback(pi, callback, cookie);
+ }
+ 
+-#endif  // __BIONIC__
++#if defined(LAYOUTLIB_HOST)
++SYSPROP_WEAK int __system_property_read(const prop_info* pi, char* name, char* value) {
++  return GetHostProperties().Read(pi, name, value);
++}
++
++SYSPROP_WEAK uint32_t __system_property_area_serial(void) {
++  return GetHostProperties().AreaSerial();
++}
++
++SYSPROP_WEAK uint32_t __system_property_serial(const prop_info* pi) {
++  return GetHostProperties().Serial(pi);
++}
++
++SYSPROP_WEAK bool __system_property_wait(const prop_info* pi, uint32_t old_serial,
++                                         uint32_t* new_serial_ptr,
++                                         const struct timespec* relative_timeout) {
++  return GetHostProperties().Wait(pi, old_serial, new_serial_ptr, relative_timeout);
++}
++
++SYSPROP_WEAK int __system_property_foreach(void (*callback)(const prop_info*, void*),
++                                           void* cookie) {
++  return GetHostProperties().Foreach(callback, cookie);
++}
++#endif
++
++}  // extern "C"
++
++#endif  // !__BIONIC__ || LAYOUTLIB_HOST
+ 
+ namespace android {
+ namespace base {

@@ -27,9 +27,13 @@ Compiled and linked the final top-level Android Studio Layoutlib shared librarie
    - Phase 2's manual `cxxbridge` (`0.1.0`) emitted `cxxbridge1$0$...` C++ bridge symbols while `libcxxbridge_macro` (`cargo_pkg_version: "1.0.119"`) emitted `cxxbridge1$119$...` in all 4 Rust FFI `.a` archives (`libaconfig_storage_read_api_cxx_bridge.a`, `libminikin_rust_ffi.a`, `libskia_rust_ffi.a`, `libinput_rust_ffi.a`).
    - Added `src/external/rust/cxx/gen/cmd/Android.bp` to `tools/build_rust.py`, rebuilt `build/host-tools/bin/cxxbridge` (`cxxbridge 1.0.119`), and regenerated all 5 CXX bridge `.cpp`/`.cc` files (`minikin`, `input`, `skia` fontations, `aconfig_storage_read_api`, `libflags`) so `$119$` matches cleanly across C++ and Rust.
 
-4. **Core JNI Bionic Guards & RTTI Export (`patches/04_host_bionic_core_jni.patch`)**
+4. **Core JNI Guards & RTTI Export (`patches/04_host_bionic_core_jni.patch`)**
    - Guarded device-only paths with `#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)` across `core_jni_helpers.h` (`CRITICAL_JNI_PARAMS`), `android_os_Parcel.cpp`, `android_media_ImageReader.cpp`, `android_media_Utils.cpp`, `android_text_Hyphenator.cpp`, and `android_view_Surface.cpp`.
    - Exported `AndroidRuntime` RTTI and vtable (`_ZTIN7android14AndroidRuntime*;`, `_ZTSN7android14AndroidRuntime*;`, `_ZTVN7android14AndroidRuntime*;`) in `frameworks/base/core/jni/platform/linux/libandroid_runtime_export.txt` so `LayoutlibRuntime` subclasses `AndroidRuntime` cleanly across DSO boundaries under NDK RTTI-enabled C++ compilation.
+
+5. **In-Process HostProperties on Bionic (`patches/05_host_bionic_libbase_properties.patch`)**
+   - `src/system/libbase/properties.cpp` previously gated its in-memory `HostProperties` map behind `#if !defined(__BIONIC__)`. Because Termux defines `__BIONIC__`, `Bridge.setSystemProperties()` -> `__system_property_set("ro.icu.data.path", ...)` would otherwise fail talking to Android `init`'s `/dev/socket/property_service` (`EACCES`).
+   - Enabled `HostProperties` under `#if !defined(__BIONIC__) || defined(LAYOUTLIB_HOST)` with strong C linkage definitions for all `__system_property_*` accessors (`_set`, `_get`, `_find`, `_read`, `_read_callback`, `_area_serial`, `_serial`, `_wait`, `_foreach`), eliminating all `libc.so` `__system_property_*` imports from both `.so` binaries.
 
 ---
 
