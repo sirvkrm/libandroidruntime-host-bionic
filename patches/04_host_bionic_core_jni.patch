@@ -340,6 +340,25 @@ index 8b0b77543..3f2179f35 100644
  #define CRITICAL_JNI_PARAMS
  #define CRITICAL_JNI_PARAMS_COMMA
  #else
+diff --git a/core/jni/platform/host/HostRuntime.cpp b/core/jni/platform/host/HostRuntime.cpp
+index 063c6c504..06d0ff0cd 100644
+--- a/core/jni/platform/host/HostRuntime.cpp
++++ b/core/jni/platform/host/HostRuntime.cpp
+@@ -171,8 +171,14 @@ static int register_jni_procs(const std::unordered_map<std::string, RegJNIRec>&
+     for (const string& className : classesToRegister) {
+         auto it = jniRegMap.find(className);
+         if (it == jniRegMap.end()) {
++#if defined(LAYOUTLIB_HOST)
++            fprintf(stderr, "[warn] Skipping missing core JNI registration function for %s\n",
++                    className.c_str());
++            continue;
++#else
+             fprintf(stderr, "Missing registration function for %s\n", className.c_str());
+             return JNI_ERR;
++#endif
+         }
+         if (it->second.mProc(env) < 0) {
+             fprintf(stderr, "Failed to register class %s\n", className.c_str());
 diff --git a/core/jni/platform/linux/libandroid_runtime_export.txt b/core/jni/platform/linux/libandroid_runtime_export.txt
 index 19e3478d5..0dd98c612 100644
 --- a/core/jni/platform/linux/libandroid_runtime_export.txt

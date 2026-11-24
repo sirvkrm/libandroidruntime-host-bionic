@@ -1,7 +1,7 @@
-diff --git a/frameworks/base/libs/androidfw/AssetManager.cpp b/frameworks/base/libs/androidfw/AssetManager.cpp
+diff --git a/libs/androidfw/AssetManager.cpp b/libs/androidfw/AssetManager.cpp
 index 5955915c9..1eaa2bf41 100644
---- a/frameworks/base/libs/androidfw/AssetManager.cpp
-+++ b/frameworks/base/libs/androidfw/AssetManager.cpp
+--- a/libs/androidfw/AssetManager.cpp
++++ b/libs/androidfw/AssetManager.cpp
 @@ -218,7 +218,7 @@ bool AssetManager::addAssetPath(
          *cookie = static_cast<int32_t>(mAssetPaths.size());
      }
@@ -20,10 +20,10 @@ index 5955915c9..1eaa2bf41 100644
                  const char* data = getenv("ANDROID_DATA");
                  LOG_ALWAYS_FATAL_IF(data == NULL, "ANDROID_DATA not set");
                  String8 overlaysListPath(data);
-diff --git a/frameworks/base/libs/hwui/HardwareBitmapUploader.h b/frameworks/base/libs/hwui/HardwareBitmapUploader.h
+diff --git a/libs/hwui/HardwareBitmapUploader.h b/libs/hwui/HardwareBitmapUploader.h
 index c4809dba2..c5b2096d2 100644
---- a/frameworks/base/libs/hwui/HardwareBitmapUploader.h
-+++ b/frameworks/base/libs/hwui/HardwareBitmapUploader.h
+--- a/libs/hwui/HardwareBitmapUploader.h
++++ b/libs/hwui/HardwareBitmapUploader.h
 @@ -20,7 +20,7 @@
  #include <SkRefCnt.h>
  #include <hwui/Bitmap.h>
@@ -51,10 +51,10 @@ index c4809dba2..c5b2096d2 100644
      static bool hasFP16Support();
      static bool has1010102Support();
      static bool has10101010Support();
-diff --git a/frameworks/base/libs/hwui/Mesh.h b/frameworks/base/libs/hwui/Mesh.h
+diff --git a/libs/hwui/Mesh.h b/libs/hwui/Mesh.h
 index f66060216..b35aae391 100644
---- a/frameworks/base/libs/hwui/Mesh.h
-+++ b/frameworks/base/libs/hwui/Mesh.h
+--- a/libs/hwui/Mesh.h
++++ b/libs/hwui/Mesh.h
 @@ -127,14 +127,14 @@ public:
          }
  
@@ -72,10 +72,10 @@ index f66060216..b35aae391 100644
                      SkMeshes::MakeIndexBuffer(context, mIndexData.data(), mIndexData.size());
  #else
                      SkMeshes::MakeIndexBuffer(mIndexData.data(), mIndexData.size());
-diff --git a/frameworks/base/libs/hwui/RecordingCanvas.cpp b/frameworks/base/libs/hwui/RecordingCanvas.cpp
+diff --git a/libs/hwui/RecordingCanvas.cpp b/libs/hwui/RecordingCanvas.cpp
 index eb7a1b0f4..5da38b731 100644
---- a/frameworks/base/libs/hwui/RecordingCanvas.cpp
-+++ b/frameworks/base/libs/hwui/RecordingCanvas.cpp
+--- a/libs/hwui/RecordingCanvas.cpp
++++ b/libs/hwui/RecordingCanvas.cpp
 @@ -641,7 +641,7 @@ struct DrawSkMesh final : Op {
      mutable bool isGpuBased;
      mutable GrDirectContext::DirectContextID contextId;
@@ -85,10 +85,10 @@ index eb7a1b0f4..5da38b731 100644
          GrDirectContext* directContext = c->recordingContext()->asDirectContext();
  
          GrDirectContext::DirectContextID id = directContext->directContextID();
-diff --git a/frameworks/base/libs/hwui/RenderNode.cpp b/frameworks/base/libs/hwui/RenderNode.cpp
+diff --git a/libs/hwui/RenderNode.cpp b/libs/hwui/RenderNode.cpp
 index 6cf476be6..3b0a9ad23 100644
---- a/frameworks/base/libs/hwui/RenderNode.cpp
-+++ b/frameworks/base/libs/hwui/RenderNode.cpp
+--- a/libs/hwui/RenderNode.cpp
++++ b/libs/hwui/RenderNode.cpp
 @@ -34,7 +34,7 @@
  #include "private/hwui/WebViewFunctor.h"
  #include "renderthread/CanvasContext.h"
@@ -107,10 +107,10 @@ index 6cf476be6..3b0a9ad23 100644
          if (context) {
              mSnapshotResult.snapshot = SkImages::MakeWithFilter(
                      context, snapshot, imageFilter, subset, clipBounds, &mSnapshotResult.outSubset,
-diff --git a/frameworks/base/libs/hwui/RenderNode.h b/frameworks/base/libs/hwui/RenderNode.h
+diff --git a/libs/hwui/RenderNode.h b/libs/hwui/RenderNode.h
 index c81ae1c36..d6fd892e8 100644
---- a/frameworks/base/libs/hwui/RenderNode.h
-+++ b/frameworks/base/libs/hwui/RenderNode.h
+--- a/libs/hwui/RenderNode.h
++++ b/libs/hwui/RenderNode.h
 @@ -306,7 +306,7 @@ private:
  
      // METHODS & FIELDS ONLY USED BY THE SKIA RENDERER
@@ -129,10 +129,10 @@ index c81ae1c36..d6fd892e8 100644
      std::unique_ptr<OoprNode> mOoprResources;
  #endif
  
-diff --git a/frameworks/base/libs/hwui/RootRenderNode.cpp b/frameworks/base/libs/hwui/RootRenderNode.cpp
+diff --git a/libs/hwui/RootRenderNode.cpp b/libs/hwui/RootRenderNode.cpp
 index 5174e27ae..b49cd5595 100644
---- a/frameworks/base/libs/hwui/RootRenderNode.cpp
-+++ b/frameworks/base/libs/hwui/RootRenderNode.cpp
+--- a/libs/hwui/RootRenderNode.cpp
++++ b/libs/hwui/RootRenderNode.cpp
 @@ -16,7 +16,7 @@
  
  #include "RootRenderNode.h"
@@ -151,10 +151,10 @@ index 5174e27ae..b49cd5595 100644
          auto looper = Looper::getForThread();
          LOG_ALWAYS_FATAL_IF(looper == nullptr, "Not on a looper thread?");
          looper->sendMessageDelayed(ms2ns(remainingTimeInMs), message, 0);
-diff --git a/frameworks/base/libs/hwui/Tonemapper.cpp b/frameworks/base/libs/hwui/Tonemapper.cpp
+diff --git a/libs/hwui/Tonemapper.cpp b/libs/hwui/Tonemapper.cpp
 index 58fc0335b..844e58183 100644
---- a/frameworks/base/libs/hwui/Tonemapper.cpp
-+++ b/frameworks/base/libs/hwui/Tonemapper.cpp
+--- a/libs/hwui/Tonemapper.cpp
++++ b/libs/hwui/Tonemapper.cpp
 @@ -19,7 +19,7 @@
  #include <SkRuntimeEffect.h>
  #include <log/log.h>
@@ -182,10 +182,10 @@ index 58fc0335b..844e58183 100644
      const auto sourceDataspace = getDataspace(source);
      const auto destinationDataspace = getDataspace(destination);
  
-diff --git a/frameworks/base/libs/hwui/WebViewFunctorManager.h b/frameworks/base/libs/hwui/WebViewFunctorManager.h
+diff --git a/libs/hwui/WebViewFunctorManager.h b/libs/hwui/WebViewFunctorManager.h
 index ac16f9138..4b5356b45 100644
---- a/frameworks/base/libs/hwui/WebViewFunctorManager.h
-+++ b/frameworks/base/libs/hwui/WebViewFunctorManager.h
+--- a/libs/hwui/WebViewFunctorManager.h
++++ b/libs/hwui/WebViewFunctorManager.h
 @@ -104,7 +104,7 @@ private:
      bool mHasContext = false;
      bool mCreatedHandle = false;
@@ -195,10 +195,29 @@ index ac16f9138..4b5356b45 100644
      sp<SurfaceControl> mSurfaceControl = nullptr;
  #endif
      std::vector<pid_t> mRenderingThreads;
-diff --git a/frameworks/base/libs/hwui/hwui/Bitmap.cpp b/frameworks/base/libs/hwui/hwui/Bitmap.cpp
+diff --git a/libs/hwui/apex/LayoutlibLoader.cpp b/libs/hwui/apex/LayoutlibLoader.cpp
+index 72a09d687..4964fb432 100644
+--- a/libs/hwui/apex/LayoutlibLoader.cpp
++++ b/libs/hwui/apex/LayoutlibLoader.cpp
+@@ -162,8 +162,14 @@ static int register_jni_procs(const std::unordered_map<std::string, RegJNIRec>&
+     for (const string& className : classesToRegister) {
+         auto it = jniRegMap.find(className);
+         if (it == jniRegMap.end()) {
++#if defined(LAYOUTLIB_HOST)
++            fprintf(stderr, "[warn] Skipping missing graphics JNI registration function for %s\n",
++                    className.c_str());
++            continue;
++#else
+             fprintf(stderr, "Missing registration function for %s\n", className.c_str());
+             return JNI_ERR;
++#endif
+         }
+         if (it->second.mProc(env) < 0) {
+             fprintf(stderr, "Failed to register class %s\n", className.c_str());
+diff --git a/libs/hwui/hwui/Bitmap.cpp b/libs/hwui/hwui/Bitmap.cpp
 index 9cefd8ddb..8761f96b9 100644
---- a/frameworks/base/libs/hwui/hwui/Bitmap.cpp
-+++ b/frameworks/base/libs/hwui/hwui/Bitmap.cpp
+--- a/libs/hwui/hwui/Bitmap.cpp
++++ b/libs/hwui/hwui/Bitmap.cpp
 @@ -24,7 +24,7 @@
  #include "OutOfProcessRendering.h"
  #include "Properties.h"
@@ -305,10 +324,10 @@ index 9cefd8ddb..8761f96b9 100644
          // pinnable images are only supported with the Ganesh GPU backend compiled in.
          image = SkImages::PinnableRasterFromBitmap(skiaBitmap);
  
-diff --git a/frameworks/base/libs/hwui/hwui/Bitmap.h b/frameworks/base/libs/hwui/hwui/Bitmap.h
+diff --git a/libs/hwui/hwui/Bitmap.h b/libs/hwui/hwui/Bitmap.h
 index 5c7e123af..6d86298e1 100644
---- a/frameworks/base/libs/hwui/hwui/Bitmap.h
-+++ b/frameworks/base/libs/hwui/hwui/Bitmap.h
+--- a/libs/hwui/hwui/Bitmap.h
++++ b/libs/hwui/hwui/Bitmap.h
 @@ -28,7 +28,7 @@
  #include <mutex>
  #include <optional>
@@ -363,10 +382,10 @@ index 5c7e123af..6d86298e1 100644
      uirenderer::OoprBitmap mOoprResources;
  #endif
  };
-diff --git a/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.cpp b/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.cpp
+diff --git a/libs/hwui/hwui/OutOfProcessRendering.cpp b/libs/hwui/hwui/OutOfProcessRendering.cpp
 index 9d1fe2a96..641997408 100644
---- a/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.cpp
-+++ b/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.cpp
+--- a/libs/hwui/hwui/OutOfProcessRendering.cpp
++++ b/libs/hwui/hwui/OutOfProcessRendering.cpp
 @@ -21,7 +21,7 @@
  
  #include "HardwareBitmapUploader.h"
@@ -385,10 +404,10 @@ index 9d1fe2a96..641997408 100644
  
  sp<GraphicBuffer> allocGraphicBufferFromBitmap(const SkImageInfo& info) {
      uint32_t usage = GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_SW_WRITE_RARELY;
-diff --git a/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.h b/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.h
+diff --git a/libs/hwui/hwui/OutOfProcessRendering.h b/libs/hwui/hwui/OutOfProcessRendering.h
 index 8ebbadf53..06b1bc5e5 100644
---- a/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.h
-+++ b/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.h
+--- a/libs/hwui/hwui/OutOfProcessRendering.h
++++ b/libs/hwui/hwui/OutOfProcessRendering.h
 @@ -37,18 +37,18 @@ class AutoBackendTextureRelease;
  }
  }  // namespace android
@@ -411,10 +430,10 @@ index 8ebbadf53..06b1bc5e5 100644
  class OoprClient;
  
  struct OoprNode {
-diff --git a/frameworks/base/libs/hwui/jni/AnimatedImageDrawable.cpp b/frameworks/base/libs/hwui/jni/AnimatedImageDrawable.cpp
+diff --git a/libs/hwui/jni/AnimatedImageDrawable.cpp b/libs/hwui/jni/AnimatedImageDrawable.cpp
 index 9c37337d2..a2d1f7f22 100644
---- a/frameworks/base/libs/hwui/jni/AnimatedImageDrawable.cpp
-+++ b/frameworks/base/libs/hwui/jni/AnimatedImageDrawable.cpp
+--- a/libs/hwui/jni/AnimatedImageDrawable.cpp
++++ b/libs/hwui/jni/AnimatedImageDrawable.cpp
 @@ -25,7 +25,7 @@
  #include <hwui/AnimatedImageDrawable.h>
  #include <hwui/Canvas.h>
@@ -460,10 +479,10 @@ index 9c37337d2..a2d1f7f22 100644
          sp<Looper> looper = Looper::getForThread();
          if (!looper.get()) {
              doThrowISE(
-diff --git a/frameworks/base/libs/hwui/jni/Bitmap.cpp b/frameworks/base/libs/hwui/jni/Bitmap.cpp
+diff --git a/libs/hwui/jni/Bitmap.cpp b/libs/hwui/jni/Bitmap.cpp
 index d97d1bca4..4a188630e 100644
---- a/frameworks/base/libs/hwui/jni/Bitmap.cpp
-+++ b/frameworks/base/libs/hwui/jni/Bitmap.cpp
+--- a/libs/hwui/jni/Bitmap.cpp
++++ b/libs/hwui/jni/Bitmap.cpp
 @@ -1318,7 +1318,7 @@ static jobject Bitmap_copyPreserveInternalConfig(JNIEnv* env, jobject, jlong bit
  
  static jobject Bitmap_wrapHardwareBufferBitmap(JNIEnv* env, jobject, jobject hardwareBuffer,
@@ -482,10 +501,10 @@ index d97d1bca4..4a188630e 100644
      LocalScopedBitmap bitmapHandle(bitmapPtr);
      if (!bitmapHandle->isHardware()) {
          jniThrowException(env, "java/lang/IllegalStateException",
-diff --git a/frameworks/base/libs/hwui/jni/Gainmap.cpp b/frameworks/base/libs/hwui/jni/Gainmap.cpp
+diff --git a/libs/hwui/jni/Gainmap.cpp b/libs/hwui/jni/Gainmap.cpp
 index 71972d01b..c7102ee9a 100644
---- a/frameworks/base/libs/hwui/jni/Gainmap.cpp
-+++ b/frameworks/base/libs/hwui/jni/Gainmap.cpp
+--- a/libs/hwui/jni/Gainmap.cpp
++++ b/libs/hwui/jni/Gainmap.cpp
 @@ -19,7 +19,7 @@
  #include "SkColorType.h"
  #include "SkGainmapInfo.h"
@@ -513,10 +532,10 @@ index 71972d01b..c7102ee9a 100644
      if (parcel == NULL) {
          jniThrowNullPointerException(env, "parcel cannot be null");
          return;
-diff --git a/frameworks/base/libs/hwui/jni/HardwareBufferHelpers.cpp b/frameworks/base/libs/hwui/jni/HardwareBufferHelpers.cpp
+diff --git a/libs/hwui/jni/HardwareBufferHelpers.cpp b/libs/hwui/jni/HardwareBufferHelpers.cpp
 index d3b48d36b..c0cb6de98 100644
---- a/frameworks/base/libs/hwui/jni/HardwareBufferHelpers.cpp
-+++ b/frameworks/base/libs/hwui/jni/HardwareBufferHelpers.cpp
+--- a/libs/hwui/jni/HardwareBufferHelpers.cpp
++++ b/libs/hwui/jni/HardwareBufferHelpers.cpp
 @@ -16,12 +16,12 @@
  
  #include "HardwareBufferHelpers.h"
@@ -559,10 +578,10 @@ index d3b48d36b..c0cb6de98 100644
      LOG_ALWAYS_FATAL_IF(toHardwareBuffer == nullptr,
                          "Failed to find symbol AHardwareBuffer_toHardwareBuffer, did you forget to "
                          "call HardwareBufferHelpers::init?");
-diff --git a/frameworks/base/libs/hwui/jni/Paint.cpp b/frameworks/base/libs/hwui/jni/Paint.cpp
+diff --git a/libs/hwui/jni/Paint.cpp b/libs/hwui/jni/Paint.cpp
 index 3fbd95b1d..49e8fc1ce 100644
---- a/frameworks/base/libs/hwui/jni/Paint.cpp
-+++ b/frameworks/base/libs/hwui/jni/Paint.cpp
+--- a/libs/hwui/jni/Paint.cpp
++++ b/libs/hwui/jni/Paint.cpp
 @@ -621,7 +621,7 @@ namespace PaintGlue {
          font->setEmbolden(savefakeBold);
  
@@ -572,10 +591,10 @@ index 3fbd95b1d..49e8fc1ce 100644
          uint32_t isTargetSdk35OrLater = android_get_application_target_sdk_version() >= 35;
  #else
          uint32_t isTargetSdk35OrLater = true;
-diff --git a/frameworks/base/libs/hwui/jni/PathIterator.cpp b/frameworks/base/libs/hwui/jni/PathIterator.cpp
+diff --git a/libs/hwui/jni/PathIterator.cpp b/libs/hwui/jni/PathIterator.cpp
 index 5d77c1513..7ba2409b6 100644
---- a/frameworks/base/libs/hwui/jni/PathIterator.cpp
-+++ b/frameworks/base/libs/hwui/jni/PathIterator.cpp
+--- a/libs/hwui/jni/PathIterator.cpp
++++ b/libs/hwui/jni/PathIterator.cpp
 @@ -41,7 +41,7 @@ public:
      // A variant of 'next' (below) that is compatible with the host JVM.
      static jint nextHost(JNIEnv* env, jclass clazz, jlong iteratorHandle, jfloatArray pointsArray) {
@@ -585,10 +604,10 @@ index 5d77c1513..7ba2409b6 100644
          jint result = next(iteratorHandle, reinterpret_cast<jlong>(points));
  #else
          jint result = next(env, clazz, iteratorHandle, reinterpret_cast<jlong>(points));
-diff --git a/frameworks/base/libs/hwui/jni/Typeface.cpp b/frameworks/base/libs/hwui/jni/Typeface.cpp
+diff --git a/libs/hwui/jni/Typeface.cpp b/libs/hwui/jni/Typeface.cpp
 index 632e143c5..2791fd681 100644
---- a/frameworks/base/libs/hwui/jni/Typeface.cpp
-+++ b/frameworks/base/libs/hwui/jni/Typeface.cpp
+--- a/libs/hwui/jni/Typeface.cpp
++++ b/libs/hwui/jni/Typeface.cpp
 @@ -37,7 +37,7 @@
  #include "SkTypeface.h"
  #include "fonts/Font.h"
@@ -607,10 +626,10 @@ index 632e143c5..2791fd681 100644
  
  static bool getVerity(const std::string& path) {
      struct statx out = {};
-diff --git a/frameworks/base/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp b/frameworks/base/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp
+diff --git a/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp b/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp
 index cf47cf08b..f5da31e07 100644
---- a/frameworks/base/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp
-+++ b/frameworks/base/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp
+--- a/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp
++++ b/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp
 @@ -16,7 +16,7 @@
  
  #include "GraphicsJNI.h"
@@ -629,10 +648,10 @@ index cf47cf08b..f5da31e07 100644
  class InvokeRunnableMessage : public MessageHandler {
  public:
      InvokeRunnableMessage(JNIEnv* env, jobject runnable) {
-diff --git a/frameworks/base/libs/hwui/jni/android_graphics_HardwareRenderer.cpp b/frameworks/base/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
+diff --git a/libs/hwui/jni/android_graphics_HardwareRenderer.cpp b/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
 index 35161f70e..18479f212 100644
---- a/frameworks/base/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
-+++ b/frameworks/base/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
+--- a/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
++++ b/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
 @@ -38,7 +38,7 @@
  #include <media/NdkImage.h>
  #include <media/NdkImageReader.h>
@@ -786,10 +805,10 @@ index 35161f70e..18479f212 100644
      jclass transactionClazz = FindClassOrDie(env, "android/view/SurfaceControl$Transaction");
      gTransactionClassInfo.clazz = MakeGlobalRefOrDie(env, transactionClazz);
      gTransactionClassInfo.ctor =
-diff --git a/frameworks/base/libs/hwui/jni/graphics_jni_helpers.h b/frameworks/base/libs/hwui/jni/graphics_jni_helpers.h
+diff --git a/libs/hwui/jni/graphics_jni_helpers.h b/libs/hwui/jni/graphics_jni_helpers.h
 index ff26ec177..a4de9f2ab 100644
---- a/frameworks/base/libs/hwui/jni/graphics_jni_helpers.h
-+++ b/frameworks/base/libs/hwui/jni/graphics_jni_helpers.h
+--- a/libs/hwui/jni/graphics_jni_helpers.h
++++ b/libs/hwui/jni/graphics_jni_helpers.h
 @@ -28,7 +28,7 @@
  // and they need all the JNI methods to have JNIEnv* and jclass/jobject as their first two arguments.
  // The following macro allows to have those arguments when compiling for host while omitting them when
@@ -799,10 +818,10 @@ index ff26ec177..a4de9f2ab 100644
  #define CRITICAL_JNI_PARAMS
  #define CRITICAL_JNI_PARAMS_COMMA
  #else
-diff --git a/frameworks/base/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp b/frameworks/base/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp
+diff --git a/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp b/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp
 index dcc965b64..07fff2fdd 100644
---- a/frameworks/base/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp
-+++ b/frameworks/base/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp
+--- a/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp
++++ b/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp
 @@ -22,7 +22,7 @@
  #include "RenderNode.h"
  #include "RenderNodeDrawable.h"
@@ -821,10 +840,10 @@ index dcc965b64..07fff2fdd 100644
      if (canvas->recordingContext()) {
          backdropImage =
                  SkImages::MakeWithFilter(canvas->recordingContext(), backdropImage, backdropFilter,
-diff --git a/frameworks/base/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp b/frameworks/base/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
+diff --git a/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp b/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
 index e505b37ee..c2aedd386 100644
---- a/frameworks/base/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
-+++ b/frameworks/base/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
+--- a/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
++++ b/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
 @@ -23,7 +23,7 @@
  #include <SkRect.h>
  #include <gui/TraceUtils.h>
@@ -843,10 +862,10 @@ index e505b37ee..c2aedd386 100644
                      if (recordingContext) {
                          snapshotImage = SkImages::MakeWithFilter(
                                  recordingContext, snapshotImage, imageFilter, subset,
-diff --git a/frameworks/base/libs/hwui/pipeline/skia/SkiaDisplayList.cpp b/frameworks/base/libs/hwui/pipeline/skia/SkiaDisplayList.cpp
+diff --git a/libs/hwui/pipeline/skia/SkiaDisplayList.cpp b/libs/hwui/pipeline/skia/SkiaDisplayList.cpp
 index 442bdc221..3be0b2f78 100644
---- a/frameworks/base/libs/hwui/pipeline/skia/SkiaDisplayList.cpp
-+++ b/frameworks/base/libs/hwui/pipeline/skia/SkiaDisplayList.cpp
+--- a/libs/hwui/pipeline/skia/SkiaDisplayList.cpp
++++ b/libs/hwui/pipeline/skia/SkiaDisplayList.cpp
 @@ -104,7 +104,7 @@ bool SkiaDisplayList::prepareListAndChildren(
          info.canvasContext.unpinImages();
      }
@@ -856,10 +875,10 @@ index 442bdc221..3be0b2f78 100644
      auto grContext = info.canvasContext.getGrContext();
      for (const auto& bufferData : mMeshBufferData) {
          bufferData->updateBuffers(grContext);
-diff --git a/frameworks/base/libs/hwui/pipeline/skia/SkiaPipeline.h b/frameworks/base/libs/hwui/pipeline/skia/SkiaPipeline.h
+diff --git a/libs/hwui/pipeline/skia/SkiaPipeline.h b/libs/hwui/pipeline/skia/SkiaPipeline.h
 index cad9b738e..2c6878c9b 100644
---- a/frameworks/base/libs/hwui/pipeline/skia/SkiaPipeline.h
-+++ b/frameworks/base/libs/hwui/pipeline/skia/SkiaPipeline.h
+--- a/libs/hwui/pipeline/skia/SkiaPipeline.h
++++ b/libs/hwui/pipeline/skia/SkiaPipeline.h
 @@ -20,7 +20,7 @@
  #include <SkDocument.h>
  #include <SkSurface.h>
@@ -887,10 +906,10 @@ index cad9b738e..2c6878c9b 100644
      sp<BLASTBufferQueue> mBLASTBufferQueue;
  #endif
  };
-diff --git a/frameworks/base/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp b/frameworks/base/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp
+diff --git a/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp b/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp
 index fc364d917..aa946ef0a 100644
---- a/frameworks/base/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp
-+++ b/frameworks/base/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp
+--- a/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp
++++ b/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp
 @@ -32,7 +32,7 @@
  
  #include "CanvasTransform.h"
@@ -927,10 +946,10 @@ index fc364d917..aa946ef0a 100644
      FunctorDrawable* functorDrawable;
      if (Properties::getRenderPipelineType() == RenderPipelineType::SkiaVulkan) {
          functorDrawable = mDisplayList->allocateDrawable<VkFunctorDrawable>(functor, asSkCanvas());
-diff --git a/frameworks/base/libs/hwui/renderthread/CacheManager.h b/frameworks/base/libs/hwui/renderthread/CacheManager.h
+diff --git a/libs/hwui/renderthread/CacheManager.h b/libs/hwui/renderthread/CacheManager.h
 index 94f100516..9b92abbd0 100644
---- a/frameworks/base/libs/hwui/renderthread/CacheManager.h
-+++ b/frameworks/base/libs/hwui/renderthread/CacheManager.h
+--- a/libs/hwui/renderthread/CacheManager.h
++++ b/libs/hwui/renderthread/CacheManager.h
 @@ -17,7 +17,7 @@
  #ifndef CACHEMANAGER_H
  #define CACHEMANAGER_H
@@ -966,10 +985,10 @@ index 94f100516..9b92abbd0 100644
      sk_sp<GrDirectContext> mGrContext;
  #endif
  
-diff --git a/frameworks/base/libs/hwui/renderthread/CanvasContext.cpp b/frameworks/base/libs/hwui/renderthread/CanvasContext.cpp
+diff --git a/libs/hwui/renderthread/CanvasContext.cpp b/libs/hwui/renderthread/CanvasContext.cpp
 index 4f4223833..af3c08443 100644
---- a/frameworks/base/libs/hwui/renderthread/CanvasContext.cpp
-+++ b/frameworks/base/libs/hwui/renderthread/CanvasContext.cpp
+--- a/libs/hwui/renderthread/CanvasContext.cpp
++++ b/libs/hwui/renderthread/CanvasContext.cpp
 @@ -22,7 +22,7 @@
  
  #include "system/window.h"
@@ -1083,10 +1102,10 @@ index 4f4223833..af3c08443 100644
      auto* instance = static_cast<CanvasContext*>(context);
  
      nsecs_t gpuCompleteTime = -1L;
-diff --git a/frameworks/base/libs/hwui/renderthread/CanvasContext.h b/frameworks/base/libs/hwui/renderthread/CanvasContext.h
+diff --git a/libs/hwui/renderthread/CanvasContext.h b/libs/hwui/renderthread/CanvasContext.h
 index 126fb3693..b9a2c564e 100644
---- a/frameworks/base/libs/hwui/renderthread/CanvasContext.h
-+++ b/frameworks/base/libs/hwui/renderthread/CanvasContext.h
+--- a/libs/hwui/renderthread/CanvasContext.h
++++ b/libs/hwui/renderthread/CanvasContext.h
 @@ -50,7 +50,7 @@
  #include "utils/ForceDark.h"
  #include "utils/RingBuffer.h"
@@ -1132,10 +1151,10 @@ index 126fb3693..b9a2c564e 100644
      sp<SurfaceControl> mSurfaceControl = nullptr;
  #endif
      // id to track surface control changes and WebViewFunctor uses it to determine
-diff --git a/frameworks/base/libs/hwui/renderthread/DrawFrameTask.cpp b/frameworks/base/libs/hwui/renderthread/DrawFrameTask.cpp
+diff --git a/libs/hwui/renderthread/DrawFrameTask.cpp b/libs/hwui/renderthread/DrawFrameTask.cpp
 index 826d00e1f..dd04c3c44 100644
---- a/frameworks/base/libs/hwui/renderthread/DrawFrameTask.cpp
-+++ b/frameworks/base/libs/hwui/renderthread/DrawFrameTask.cpp
+--- a/libs/hwui/renderthread/DrawFrameTask.cpp
++++ b/libs/hwui/renderthread/DrawFrameTask.cpp
 @@ -140,7 +140,7 @@ void DrawFrameTask::run() {
      if (CC_LIKELY(canDrawThisFrame)) {
          context->draw(solelyTextureViewUpdates);
@@ -1154,10 +1173,10 @@ index 826d00e1f..dd04c3c44 100644
      for (size_t i = 0; i < mLayers.size(); i++) {
          if (mLayers[i]) {
              mLayers[i]->apply();
-diff --git a/frameworks/base/libs/hwui/renderthread/DrawFrameTask.h b/frameworks/base/libs/hwui/renderthread/DrawFrameTask.h
+diff --git a/libs/hwui/renderthread/DrawFrameTask.h b/libs/hwui/renderthread/DrawFrameTask.h
 index 4130d4abe..1b3adb191 100644
---- a/frameworks/base/libs/hwui/renderthread/DrawFrameTask.h
-+++ b/frameworks/base/libs/hwui/renderthread/DrawFrameTask.h
+--- a/libs/hwui/renderthread/DrawFrameTask.h
++++ b/libs/hwui/renderthread/DrawFrameTask.h
 @@ -30,7 +30,7 @@
  #include "SkColorSpace.h"
  #include "SwapBehavior.h"
@@ -1167,10 +1186,10 @@ index 4130d4abe..1b3adb191 100644
  #include <android/hardware_buffer.h>
  #endif
  #include "HardwareBufferRenderParams.h"
-diff --git a/frameworks/base/libs/hwui/renderthread/IRenderPipeline.h b/frameworks/base/libs/hwui/renderthread/IRenderPipeline.h
+diff --git a/libs/hwui/renderthread/IRenderPipeline.h b/libs/hwui/renderthread/IRenderPipeline.h
 index 012dae474..479293e8b 100644
---- a/frameworks/base/libs/hwui/renderthread/IRenderPipeline.h
-+++ b/frameworks/base/libs/hwui/renderthread/IRenderPipeline.h
+--- a/libs/hwui/renderthread/IRenderPipeline.h
++++ b/libs/hwui/renderthread/IRenderPipeline.h
 @@ -19,7 +19,7 @@
  #include <SkColorSpace.h>
  #include <SkRect.h>
@@ -1189,10 +1208,10 @@ index 012dae474..479293e8b 100644
      virtual void setSurfaceControl(const sp<SurfaceControl>&) {}
      virtual void setBLASTBufferQueue(const sp<BLASTBufferQueue>&) {}
      virtual void setCornerRadiiCallback(std::function<void(const gui::CornerRadii&)>) {}
-diff --git a/frameworks/base/libs/hwui/renderthread/ReliableSurface.h b/frameworks/base/libs/hwui/renderthread/ReliableSurface.h
+diff --git a/libs/hwui/renderthread/ReliableSurface.h b/libs/hwui/renderthread/ReliableSurface.h
 index d6a4d50d3..803ea2f82 100644
---- a/frameworks/base/libs/hwui/renderthread/ReliableSurface.h
-+++ b/frameworks/base/libs/hwui/renderthread/ReliableSurface.h
+--- a/libs/hwui/renderthread/ReliableSurface.h
++++ b/libs/hwui/renderthread/ReliableSurface.h
 @@ -21,7 +21,7 @@
  #include <apex/window.h>
  #include <utils/Errors.h>
@@ -1211,10 +1230,10 @@ index d6a4d50d3..803ea2f82 100644
      AHardwareBuffer_Format mFormat = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
      UniqueAHardwareBuffer mScratchBuffer;
      ANativeWindowBuffer* mReservedBuffer = nullptr;
-diff --git a/frameworks/base/libs/hwui/renderthread/RenderProxy.cpp b/frameworks/base/libs/hwui/renderthread/RenderProxy.cpp
+diff --git a/libs/hwui/renderthread/RenderProxy.cpp b/libs/hwui/renderthread/RenderProxy.cpp
 index 31fee5011..11d46f5e2 100644
---- a/frameworks/base/libs/hwui/renderthread/RenderProxy.cpp
-+++ b/frameworks/base/libs/hwui/renderthread/RenderProxy.cpp
+--- a/libs/hwui/renderthread/RenderProxy.cpp
++++ b/libs/hwui/renderthread/RenderProxy.cpp
 @@ -23,7 +23,7 @@
  #include <pthread.h>
  #include "utils/Thread.h"
@@ -1302,10 +1321,10 @@ index 31fee5011..11d46f5e2 100644
      return thread.getTid();
  #else
      return 0;
-diff --git a/frameworks/base/libs/hwui/renderthread/RenderProxy.h b/frameworks/base/libs/hwui/renderthread/RenderProxy.h
+diff --git a/libs/hwui/renderthread/RenderProxy.h b/libs/hwui/renderthread/RenderProxy.h
 index f8c2e9fbd..30d0d64a1 100644
---- a/frameworks/base/libs/hwui/renderthread/RenderProxy.h
-+++ b/frameworks/base/libs/hwui/renderthread/RenderProxy.h
+--- a/libs/hwui/renderthread/RenderProxy.h
++++ b/libs/hwui/renderthread/RenderProxy.h
 @@ -32,7 +32,7 @@
  #include "hwui/Bitmap.h"
  #include "utils/ForceDark.h"
@@ -1324,10 +1343,10 @@ index f8c2e9fbd..30d0d64a1 100644
      void setCornerRadiiCallback(std::function<void(const gui::CornerRadii&)> cornerRadiiCallback);
      void setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback);
  
-diff --git a/frameworks/base/libs/hwui/utils/StatsUtils.cpp b/frameworks/base/libs/hwui/utils/StatsUtils.cpp
+diff --git a/libs/hwui/utils/StatsUtils.cpp b/libs/hwui/utils/StatsUtils.cpp
 index 4fd8281fa..953d7ca32 100644
---- a/frameworks/base/libs/hwui/utils/StatsUtils.cpp
-+++ b/frameworks/base/libs/hwui/utils/StatsUtils.cpp
+--- a/libs/hwui/utils/StatsUtils.cpp
++++ b/libs/hwui/utils/StatsUtils.cpp
 @@ -14,7 +14,7 @@
   * limitations under the License.
   */
@@ -1355,108 +1374,3 @@ index 4fd8281fa..953d7ca32 100644
  
      if (!statssocket::lazy::IsAvailable()) {
          return;
-diff --git a/frameworks/native/libs/binder/IServiceManager.cpp b/frameworks/native/libs/binder/IServiceManager.cpp
-index 0a564aa..a1cd59c 100644
---- a/frameworks/native/libs/binder/IServiceManager.cpp
-+++ b/frameworks/native/libs/binder/IServiceManager.cpp
-@@ -53,7 +53,7 @@
- #include "ServiceManagerHost.h"
- #endif
- 
--#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__) && !defined(__ANDROID_NATIVE_BRIDGE__)
-+#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__) && !defined(__ANDROID_NATIVE_BRIDGE__) && !defined(LAYOUTLIB_HOST)
- #include <android/apexsupport.h>
- #include <vndksupport/linker.h>
- #endif
-@@ -555,7 +555,7 @@ bool checkPermission(const String16& permission, pid_t pid, uid_t uid, bool logP
- 
- void* openDeclaredPassthroughHal(const String16& interface, const String16& instance, int flag) {
- #if defined(__ANDROID__) && !defined(__ANDROID_VENDOR__) && !defined(__ANDROID_RECOVERY__) && \
--        !defined(__ANDROID_NATIVE_BRIDGE__)
-+        !defined(__ANDROID_NATIVE_BRIDGE__) && !defined(LAYOUTLIB_HOST)
-     sp<IServiceManager> sm = defaultServiceManager();
-     String16 name = interface + String16("/") + instance;
-     if (!sm->isDeclared(name)) {
-diff --git a/frameworks/native/libs/binder/ProcessState.cpp b/frameworks/native/libs/binder/ProcessState.cpp
-index dd4444b..9ab20f5 100644
---- a/frameworks/native/libs/binder/ProcessState.cpp
-+++ b/frameworks/native/libs/binder/ProcessState.cpp
-@@ -49,7 +49,7 @@
- #define DEFAULT_MAX_BINDER_THREADS 15
- #define DEFAULT_ENABLE_ONEWAY_SPAM_DETECTION 1
- 
--#if defined(__ANDROID__) || defined(__Fuchsia__)
-+#if (defined(__ANDROID__) || defined(__Fuchsia__)) && !defined(LAYOUTLIB_HOST)
- #define EXPECT_BINDER_OPEN_SUCCESS
- #endif
- 
-diff --git a/frameworks/native/libs/binder/Utils.h b/frameworks/native/libs/binder/Utils.h
-index 1421102..aa0ee1f 100644
---- a/frameworks/native/libs/binder/Utils.h
-+++ b/frameworks/native/libs/binder/Utils.h
-@@ -86,7 +86,7 @@ constexpr size_t countof(T (&)[N]) {
- 
- // avoid optimizations
- inline void zeroMemory(uint8_t* data, size_t size) {
--#ifdef __BIONIC__
-+#if defined(__BIONIC__) && __ANDROID_API__ >= 35
-     memset_explicit(data, 0, size);
- #else
-     // Assembly marking to prevent any optimizing compiler from not actually clearing the buffer,
-diff --git a/frameworks/native/libs/binder/ndk/stability.cpp b/frameworks/native/libs/binder/ndk/stability.cpp
-index a9b18ee..5f7d382 100644
---- a/frameworks/native/libs/binder/ndk/stability.cpp
-+++ b/frameworks/native/libs/binder/ndk/stability.cpp
-@@ -31,7 +31,7 @@ using ::android::internal::Stability;
- #error libbinder_ndk should only be built in a system context
- #endif
- 
--#ifdef __ANDROID_NDK__
-+#if defined(__ANDROID_NDK__) && !defined(LAYOUTLIB_HOST)
- #error libbinder_ndk should only be built in a system context
- #endif
- 
-diff --git a/frameworks/native/libs/input/KeyLayoutMap.cpp b/frameworks/native/libs/input/KeyLayoutMap.cpp
-index 46bf5fc..e48c6c7 100644
---- a/frameworks/native/libs/input/KeyLayoutMap.cpp
-+++ b/frameworks/native/libs/input/KeyLayoutMap.cpp
-@@ -26,7 +26,7 @@
- #include <utils/Errors.h>
- #include <utils/Timers.h>
- #include <utils/Tokenizer.h>
--#if defined(__ANDROID__)
-+#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
- #include <vintf/KernelConfigs.h>
- #endif
- 
-@@ -96,7 +96,7 @@ static const std::unordered_map<std::string_view, InputDeviceSensorType> SENSOR_
-          sensorPair<InputDeviceSensorType::SIGNIFICANT_MOTION>()};
- 
- bool kernelConfigsArePresent(const std::set<std::string>& configs) {
--#if defined(__ANDROID__)
-+#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
-     if (configs.empty()) {
-         return true;
-     }
-diff --git a/frameworks/native/libs/input/TfLiteMotionPredictor.cpp b/frameworks/native/libs/input/TfLiteMotionPredictor.cpp
-index cb6dabf..f52226e 100644
---- a/frameworks/native/libs/input/TfLiteMotionPredictor.cpp
-+++ b/frameworks/native/libs/input/TfLiteMotionPredictor.cpp
-@@ -66,7 +66,7 @@ constexpr char OUTPUT_PRESSURE[] = "pressure";
- 
- // Ideally, we would just use std::filesystem::exists here, but it requires libc++fs, which causes
- // build issues in other parts of the system.
--#if defined(__ANDROID__)
-+#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
- bool fileExists(const char* filename) {
-     struct stat buffer;
-     return stat(filename, &buffer) == 0;
-@@ -74,7 +74,7 @@ bool fileExists(const char* filename) {
- #endif
- 
- std::string getModelPath() {
--#if defined(__ANDROID__)
-+#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
-     static const char* oemModel = "/vendor/etc/motion_predictor_model.tflite";
-     if (fileExists(oemModel)) {
-         return oemModel;
