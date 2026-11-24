@@ -20,6 +20,8 @@ EXTRA_REPOS = [
     ("build/soong", "platform/build/soong"),
     ("build/release", "platform/build/release"),
     ("external/gemmlowp", "platform/external/gemmlowp"),
+    ("external/google-highway", "platform/external/google-highway"),
+    ("external/libjxl", "platform/external/libjxl"),
     ("external/vulkan-headers", "platform/external/vulkan-headers"),
     ("frameworks/av", "platform/frameworks/av"),
     ("hardware/libhardware", "platform/hardware/libhardware"),
