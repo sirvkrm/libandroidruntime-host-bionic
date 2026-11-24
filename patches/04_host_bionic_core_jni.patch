@@ -1,0 +1,312 @@
+diff --git a/core/jni/android_media_ImageReader.cpp b/core/jni/android_media_ImageReader.cpp
+index 1a84de9b8..8c8e1fbcc 100644
+--- a/core/jni/android_media_ImageReader.cpp
++++ b/core/jni/android_media_ImageReader.cpp
+@@ -26,7 +26,7 @@
+ #include <android_runtime/android_view_Surface.h>
+ #include <com_android_graphics_libgui_flags.h>
+ #include <cutils/atomic.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <grallocusage/GrallocUsageConversion.h>
+ #else
+ #define GRALLOC_USAGE_PROTECTED 0
+@@ -39,7 +39,7 @@
+ #include <jni.h>
+ #include <jni_wrappers.h>
+ #include <nativehelper/JNIHelp.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <private/android/AHardwareBufferHelpers.h>
+ #endif
+ #include <stdint.h>
+@@ -448,7 +448,7 @@ static void ImageReader_init(JNIEnv* env, jobject thiz, jobject weakThiz, jint w
+     String8 consumerName = String8::format("ImageReader-%dx%df%xm%d-%d-%d",
+             width, height, nativeHalFormat, maxImages, getpid(),
+             createProcessUniqueId());
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     uint64_t consumerUsage =
+             android_hardware_HardwareBuffer_convertToGrallocUsageBits(ndkUsage);
+ #else
+@@ -809,7 +809,7 @@ static bool Image_getLockedImageInfo(JNIEnv* env, LockedImage* buffer, int idx,
+     return true;
+ }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ static void ImageReader_unlockGraphicBuffer(JNIEnv* env, jobject /*thiz*/,
+         jobject buffer) {
+     sp<GraphicBuffer> graphicBuffer =
+@@ -1002,7 +1002,7 @@ static jint Image_getFormat(JNIEnv* env, jobject thiz, jint readerFormat)
+     }
+ }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ static jobject Image_getHardwareBuffer(JNIEnv* env, jobject thiz) {
+     BufferItem* buffer = Image_getBufferItem(env, thiz);
+     if (buffer == nullptr) {
+@@ -1029,7 +1029,7 @@ static const JNINativeMethod gImageReaderMethods[] =
+          {"nativeImageSetup", "(Landroid/media/Image;)I", (void*)ImageReader_imageSetup},
+          {"nativeGetSurface", "()Landroid/view/Surface;", (void*)ImageReader_getSurface},
+          {"nativeDetachImage", "(Landroid/media/Image;Z)I", (void*)ImageReader_detachImage},
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+          {"nativeCreateImagePlanes",
+           "(ILandroid/graphics/GraphicBuffer;IIIIII)[Landroid/media/ImageReader$ImagePlane;",
+           (void*)ImageReader_createImagePlanes},
+@@ -1045,7 +1045,7 @@ static const JNINativeMethod gImageMethods[] = {
+         {"nativeGetHeight", "()I", (void*)Image_getHeight},
+         {"nativeGetFormat", "(I)I", (void*)Image_getFormat},
+         {"nativeGetFenceFd", "()I", (void*)Image_getFenceFd},
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         {"nativeGetHardwareBuffer", "()Landroid/hardware/HardwareBuffer;",
+          (void*)Image_getHardwareBuffer},
+ #endif
+diff --git a/core/jni/android_media_Utils.cpp b/core/jni/android_media_Utils.cpp
+index b0718b528..a0674c183 100644
+--- a/core/jni/android_media_Utils.cpp
++++ b/core/jni/android_media_Utils.cpp
+@@ -19,7 +19,7 @@
+ 
+ #include "android_media_Utils.h"
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support hardware
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware
+ #include <aidl/android/hardware/graphics/common/PixelFormat.h>
+ #include <aidl/android/hardware/graphics/common/PlaneLayoutComponentType.h>
+ #include <ui/GraphicBufferMapper.h>
+@@ -41,7 +41,7 @@ namespace android {
+ 
+ // -----------Utility functions used by ImageReader/Writer JNI-----------------
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ using AidlPixelFormat = aidl::android::hardware::graphics::common::PixelFormat;
+ #else
+ namespace AidlPixelFormat {
+@@ -551,7 +551,7 @@ status_t getLockedImageInfo(LockedImage* buffer, int idx,
+     return OK;
+ }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ static status_t extractP010Gralloc4PlaneLayout(
+         sp<GraphicBuffer> buffer, void *pData, int format, LockedImage *outputImage) {
+     using aidl::android::hardware::graphics::common::PlaneLayoutComponent;
+@@ -737,7 +737,7 @@ status_t lockImageFromBuffer(sp<GraphicBuffer> buffer, uint32_t inUsage,
+             ALOGE("Lock buffer failed!");
+             return res;
+         }
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         if (isPossibly10BitYUV(format)) {
+             if (format == HAL_PIXEL_FORMAT_YCBCR_P010 &&
+                 OK == extractP010Gralloc4PlaneLayout(buffer, pData, format, outputImage)) {
+diff --git a/core/jni/android_os_Parcel.cpp b/core/jni/android_os_Parcel.cpp
+index f776f8cec..2bcd2fc9e 100644
+--- a/core/jni/android_os_Parcel.cpp
++++ b/core/jni/android_os_Parcel.cpp
+@@ -43,7 +43,7 @@
+ #include "android_util_Binder.h"
+ #include "core_jni_helpers.h"
+ 
+-#if defined(__ANDROID__)
++#if (defined(__ANDROID__) && !defined(LAYOUTLIB_HOST))
+ #include <android_os.h>
+ #endif
+ 
+diff --git a/core/jni/android_text_Hyphenator.cpp b/core/jni/android_text_Hyphenator.cpp
+index 5a8390674..7addf4405 100644
+--- a/core/jni/android_text_Hyphenator.cpp
++++ b/core/jni/android_text_Hyphenator.cpp
+@@ -14,14 +14,14 @@
+  * limitations under the License.
+  */
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <com_android_text_flags.h>
+ #endif
+ #include <core_jni_helpers.h>
+ #include <cutils/trace.h>
+ #include <fcntl.h>
+ #include <minikin/Hyphenator.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <sys/mman.h>
+ #else
+ #include <android-base/mapped_file.h>
+@@ -29,7 +29,7 @@
+ #endif
+ #include <sys/stat.h>
+ #include <sys/types.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <tracing_perfetto.h>
+ #endif
+ #include <unicode/uloc.h>
+@@ -40,7 +40,7 @@
+ namespace android {
+ 
+ static std::string buildFileName(const std::string& locale) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     constexpr char SYSTEM_HYPHENATOR_PREFIX[] = "/system/usr/hyphen-data/hyph-";
+ #else
+     std::string hyphenPath = base::GetProperty("ro.hyphen.data.dir", "/system/usr/hyphen-data");
+@@ -66,7 +66,7 @@ static std::pair<const uint8_t*, size_t> mmapPatternFile(const std::string& loca
+         return std::make_pair(nullptr, 0);
+     }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     void* ptr = mmap(nullptr, st.st_size, PROT_READ, MAP_SHARED, fd, 0 /* offset */);
+     close(fd);
+     if (ptr == MAP_FAILED) {
+@@ -94,7 +94,7 @@ static void addHyphenatorWithoutPatternFile(const std::string& locale, int minPr
+ }
+ 
+ static void addHyphenator(const std::string& locale, int minPrefix, int minSuffix) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     if (com::android::text::flags::rust_hyphenator() &&
+         com::android::text::flags::lazy_hyphenator_mmap_init()) {
+         const std::string hyFilePath = buildFileName(locale);
+@@ -247,11 +247,11 @@ static void init() {
+     addHyphenatorAlias("und-Taml", "ta");  // Tamil
+     addHyphenatorAlias("und-Telu", "te");  // Telugu
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     tracing_perfetto::traceBegin(ATRACE_TAG_VIEW, "CacheUnicodeExtensionSubtagsKeyMap");
+ #endif
+     cacheUnicodeExtensionSubtagsKeyMap();
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     tracing_perfetto::traceEnd(ATRACE_TAG_VIEW); // CacheUnicodeExtensionSubtagsKeyMap
+ #endif
+ }
+diff --git a/core/jni/android_view_Surface.cpp b/core/jni/android_view_Surface.cpp
+index ac7d786eb..75e48e807 100644
+--- a/core/jni/android_view_Surface.cpp
++++ b/core/jni/android_view_Surface.cpp
+@@ -28,7 +28,7 @@
+ #include <android_runtime/android_graphics_SurfaceTexture.h>
+ #include <android_runtime/android_view_Surface.h>
+ #include <android_runtime/Log.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <private/android/AHardwareBufferHelpers.h>
+ 
+ #include "android_os_Parcel.h"
+@@ -37,7 +37,7 @@
+ #include <gui/BLASTBufferQueue.h>
+ #endif
+ #include <gui/Surface.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <gui/SurfaceControl.h>
+ #include <gui/view/Surface.h>
+ #endif
+@@ -72,7 +72,7 @@ static struct {
+     jfieldID bottom;
+ } gRectClassInfo;
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ class JNamedColorSpace {
+ public:
+     // ColorSpace.Named.SRGB.ordinal() = 0;
+@@ -151,7 +151,7 @@ static inline bool isSurfaceValid(const sp<Surface>& sur) {
+ 
+ // ----------------------------------------------------------------------------
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ static jlong nativeCreateFromSurfaceTexture(JNIEnv* env, jclass clazz,
+         jobject surfaceTextureObj) {
+ #if COM_ANDROID_GRAPHICS_LIBGUI_FLAGS(WB_SURFACETEXTURE)
+@@ -283,7 +283,7 @@ static void nativeAllocateBuffers(JNIEnv* /* env */ , jclass /* clazz */,
+ }
+ 
+ // ----------------------------------------------------------------------------
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ static jlong nativeCreateFromSurfaceControl(JNIEnv* env, jclass clazz,
+         jlong surfaceControlNativeObj) {
+     sp<SurfaceControl> ctrl(reinterpret_cast<SurfaceControl *>(surfaceControlNativeObj));
+@@ -427,7 +427,7 @@ static jint nativeForceScopedDisconnect(JNIEnv *env, jclass clazz, jlong nativeO
+     return surface->disconnect(-1, IGraphicBufferProducer::DisconnectMode::AllLocal);
+ }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ static jint nativeAttachAndQueueBufferWithColorSpace(JNIEnv* env, jclass clazz, jlong nativeObject,
+                                                      jobject hardwareBuffer, jint colorSpaceId) {
+     Surface* surface = reinterpret_cast<Surface*>(nativeObject);
+@@ -489,7 +489,7 @@ static void nativeDestroy(JNIEnv* env, jclass clazz, jlong nativeObject) {
+ // ----------------------------------------------------------------------------
+ 
+ static const JNINativeMethod gSurfaceMethods[] = {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         {"nativeCreateFromSurfaceTexture", "(Landroid/graphics/SurfaceTexture;)J",
+          (void*)nativeCreateFromSurfaceTexture},
+ #endif
+@@ -501,7 +501,7 @@ static const JNINativeMethod gSurfaceMethods[] = {
+         {"nativeUnlockCanvasAndPost", "(JLandroid/graphics/Canvas;)V",
+          (void*)nativeUnlockCanvasAndPost},
+         {"nativeAllocateBuffers", "(J)V", (void*)nativeAllocateBuffers},
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         {"nativeCreateFromSurfaceControl", "(J)J", (void*)nativeCreateFromSurfaceControl},
+         {"nativeGetFromSurfaceControl", "(JJ)J", (void*)nativeGetFromSurfaceControl},
+         {"nativeReadFromParcel", "(JLandroid/os/Parcel;)J", (void*)nativeReadFromParcel},
+@@ -512,7 +512,7 @@ static const JNINativeMethod gSurfaceMethods[] = {
+         {"nativeGetNextFrameNumber", "(J)J", (void*)nativeGetNextFrameNumber},
+         {"nativeSetScalingMode", "(JI)I", (void*)nativeSetScalingMode},
+         {"nativeForceScopedDisconnect", "(J)I", (void*)nativeForceScopedDisconnect},
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         {"nativeAttachAndQueueBufferWithColorSpace", "(JLandroid/hardware/HardwareBuffer;I)I",
+          (void*)nativeAttachAndQueueBufferWithColorSpace},
+ #endif
+@@ -521,7 +521,7 @@ static const JNINativeMethod gSurfaceMethods[] = {
+         {"nativeSetFrameRate", "(JFII)I", (void*)nativeSetFrameRate},
+         {"nativeSetProducerThrottlingEnabled", "(JZ)I", (void*)nativeSetProducerThrottlingEnabled},
+         {"nativeIsProducerThrottlingEnabled", "(J)I", (void*)nativeIsProducerThrottlingEnabled},
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         {"nativeGetFromBlastBufferQueue", "(JJ)J", (void*)nativeGetFromBlastBufferQueue},
+ #endif
+         {"nativeDestroy", "(J)V", (void*)nativeDestroy},
+diff --git a/core/jni/core_jni_helpers.h b/core/jni/core_jni_helpers.h
+index 8b0b77543..3f2179f35 100644
+--- a/core/jni/core_jni_helpers.h
++++ b/core/jni/core_jni_helpers.h
+@@ -28,7 +28,7 @@
+ // and they need all the JNI methods to have JNIEnv* and jclass/jobject as their first two arguments.
+ // The following macro allows to have those arguments when compiling for host while omitting them when
+ // compiling for Android.
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #define CRITICAL_JNI_PARAMS
+ #define CRITICAL_JNI_PARAMS_COMMA
+ #else
+diff --git a/core/jni/platform/linux/libandroid_runtime_export.txt b/core/jni/platform/linux/libandroid_runtime_export.txt
+index 19e3478d5..0dd98c612 100644
+--- a/core/jni/platform/linux/libandroid_runtime_export.txt
++++ b/core/jni/platform/linux/libandroid_runtime_export.txt
+@@ -33,6 +33,9 @@
+     _ZN7android10VectorImpl*;
+     _ZN7android11BufferQueue*;
+     _ZN7android14AndroidRuntime*;
++    _ZTIN7android14AndroidRuntime*;
++    _ZTSN7android14AndroidRuntime*;
++    _ZTVN7android14AndroidRuntime*;
+     _ZN7android14sp_report_raceEv*;
+     _ZN7android15KeyCharacterMap*;
+     _ZN7android15InputDeviceInfo*;

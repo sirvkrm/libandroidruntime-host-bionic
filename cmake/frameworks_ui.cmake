@@ -208,6 +208,7 @@ target_link_libraries(iinputflinger_aidl_lib_static PUBLIC libgui_window_info_st
 
 add_library(libstatslog_libinput_bundled STATIC
     "${GEN_DIR}/statslog/src/statslog_libinput.cpp"
+    "${GEN_DIR}/statslog/src/statslog_input.cpp"
 )
 target_include_directories(libstatslog_libinput_bundled PUBLIC
     "${GEN_DIR}/statslog/include"

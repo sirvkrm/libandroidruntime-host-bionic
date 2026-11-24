@@ -68,6 +68,7 @@ class RustBuilder:
         bp_paths = sorted(crates_dir.glob("*/Android.bp")) + [
             SRC / "external" / "rust" / "cxx" / "Android.bp",
             SRC / "external" / "rust" / "cxx" / "macro" / "Android.bp",
+            SRC / "external" / "rust" / "cxx" / "gen" / "cmd" / "Android.bp",
             SRC / "system" / "logging" / "rust" / "Android.bp",
             SRC / "system" / "server_configurable_flags" / "libflags" / "Android.bp",
             SRC / "build" / "make" / "tools" / "aconfig" / "aconfig_storage_file" / "Android.bp",
