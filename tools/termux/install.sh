@@ -279,8 +279,9 @@ case "$MODE" in
         if ! VER_OUT="$("$jcand" -version 2>&1)"; then
           continue
         fi
-        VER_LINE="$(printf "%s\n" "$VER_OUT" | head -n 1)"
-        MAJ="$(printf "%s" "$VER_LINE" | sed -n 's/.*"\([0-9]*\).*/\1/p')"
+        VER_LINE="$(printf "%s\n" "$VER_OUT" | grep -i "version" | head -n 1 || true)"
+        [ -z "$VER_LINE" ] && VER_LINE="$(printf "%s\n" "$VER_OUT" | head -n 1)"
+        MAJ="$(printf "%s" "$VER_LINE" | sed -n 's/.*"\([0-9][0-9]*\).*/\1/p')"
         if [ -n "$MAJ" ] && [ "$MAJ" -gt "$BEST_VER" ] 2>/dev/null; then
           BEST_VER="$MAJ"
           JAVA_BIN="$jcand"
@@ -289,8 +290,9 @@ case "$MODE" in
         fi
       done
     else
-      VER_OUT="$("$JAVA_BIN" -version 2>&1 | head -n 1 || true)"
-      BEST_VER="$(printf "%s" "$VER_OUT" | sed -n 's/.*"\([0-9]*\).*/\1/p')"
+      VER_OUT="$("$JAVA_BIN" -version 2>&1 || true)"
+      VER_LINE="$(printf "%s\n" "$VER_OUT" | grep -i "version" | head -n 1 || true)"
+      BEST_VER="$(printf "%s" "$VER_LINE" | sed -n 's/.*"\([0-9][0-9]*\).*/\1/p')"
       BEST_VER="${BEST_VER:-0}"
     fi
     JAVA_BIN="${JAVA_BIN:-java}"

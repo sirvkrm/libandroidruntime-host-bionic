@@ -195,8 +195,43 @@ public class RenderXmlTest {
                 System.err.println("[warn] build.prop load error: " + e.getMessage());
             }
         }
+        // Bridge.setSystemProperties() explicitly sets these three ro.* keys afterward.
+        map.remove("ro.icu.data.path");
+        map.remove("ro.hyphen.data.dir");
+        map.remove("ro.keyboard.paths");
+
+        if (map.getOrDefault("ro.product.cpu.abilist64", "").isEmpty()) {
+            map.put("ro.product.cpu.abilist64", "arm64-v8a");
+        }
+        if (map.getOrDefault("ro.product.cpu.abilist", "").isEmpty()) {
+            map.put("ro.product.cpu.abilist", "arm64-v8a");
+        }
+        map.putIfAbsent("ro.product.cpu.abilist32", "");
+        map.putIfAbsent("ro.product.cpu.abi", "arm64-v8a");
+        map.putIfAbsent("ro.product.brand", "Android");
+        map.putIfAbsent("ro.product.device", "layoutlib");
+        map.putIfAbsent("ro.product.manufacturer", "Android");
+        map.putIfAbsent("ro.product.model", "Layoutlib");
+        map.putIfAbsent("ro.product.name", "layoutlib");
+        map.putIfAbsent("ro.product.locale", "en-US");
+        map.putIfAbsent("ro.build.id", "MAIN");
+        map.putIfAbsent("ro.build.tags", "release-keys");
+        map.putIfAbsent("ro.build.type", "user");
+        map.putIfAbsent("ro.build.date", "Thu Jan 01 00:00:00 GMT 2026");
+        map.putIfAbsent("ro.build.date.utc", "1767225600");
+        map.putIfAbsent("ro.build.version.incremental", "eng.layoutlib");
         map.putIfAbsent("ro.build.version.sdk", "36");
+        map.putIfAbsent("ro.build.version.sdk_full", "36.0");
+        map.putIfAbsent("ro.build.version.preview_sdk", "0");
+        map.putIfAbsent("ro.build.version.codename", "REL");
+        map.putIfAbsent("ro.build.version.all_codenames", "REL");
+        map.putIfAbsent("ro.build.version.known_codenames", "REL");
         map.putIfAbsent("ro.build.version.release", "17");
+        map.putIfAbsent("ro.build.version.release_or_codename", "17");
+        map.putIfAbsent("ro.build.version.security_patch", "2026-01-01");
+        map.putIfAbsent("ro.build.version.min_supported_target_sdk", "28");
+        map.putIfAbsent("ro.build.characteristics", "default");
+        map.putIfAbsent("ro.hwui.max_texture_allocation_size", "104857600");
         return map;
     }
 
@@ -308,9 +343,11 @@ public class RenderXmlTest {
         File hyphenDir = hyphenDirPath != null ? new File(hyphenDirPath) : findFirstExisting(
                 dataDir != null ? new File(dataDir, "hyphen-data") : null,
                 dataDir != null ? new File(dataDir, "hyphen") : null);
-        File buildProp = dataDir != null ? findFirstExisting(
-                new File(dataDir, "build.prop"),
-                new File(dataDir, "layoutlib-build.prop")) : null;
+        File buildProp = findFirstExisting(
+                dataDir != null ? new File(dataDir, "build.prop") : null,
+                dataDir != null ? new File(dataDir, "layoutlib-build.prop") : null,
+                (resDir != null && resDir.getParentFile() != null && resDir.getParentFile().getParentFile() != null)
+                        ? new File(resDir.getParentFile().getParentFile(), "build.prop") : null);
         File attrsXml = resDir != null && resDir.isDirectory() ? new File(resDir, "values/attrs.xml") : null;
 
         if (icuPath == null) {
@@ -426,7 +463,12 @@ public class RenderXmlTest {
             System.out.printf("[PASS] Rendered %s -> %s (%dx%d PNG, %d bytes, %d ms)%n",
                     xmlPath, outFile.getAbsolutePath(), img.getWidth(), img.getHeight(), outFile.length(), ms);
         } finally {
-            session.dispose();
+            if (session != null) {
+                try {
+                    session.dispose();
+                } catch (Throwable ignored) {
+                }
+            }
         }
     }
 }
