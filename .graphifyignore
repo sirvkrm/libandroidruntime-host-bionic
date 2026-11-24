@@ -1,0 +1,8 @@
+src/
+build/
+out/
+.cache/
+map/*.json
+map/*.xml
+map/DEPENDENCY_TREE.md
+__pycache__/

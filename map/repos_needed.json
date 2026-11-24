@@ -1,0 +1,373 @@
+[
+  {
+    "path": "src/art",
+    "aosp_path": "art",
+    "url": "https://android.googlesource.com/platform/art",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/bionic",
+    "aosp_path": "bionic",
+    "url": "https://android.googlesource.com/platform/bionic",
+    "tag": "android-17.0.0_r1",
+    "module_count": 4
+  },
+  {
+    "path": "src/build/make",
+    "aosp_path": "build/make",
+    "url": "https://android.googlesource.com/platform/build",
+    "tag": "android-17.0.0_r1",
+    "module_count": 6
+  },
+  {
+    "path": "src/external/FP16",
+    "aosp_path": "external/FP16",
+    "url": "https://android.googlesource.com/platform/external/FP16",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/XMP-Toolkit-SDK",
+    "aosp_path": "external/XMP-Toolkit-SDK",
+    "url": "https://android.googlesource.com/platform/external/XMP-Toolkit-SDK",
+    "tag": "android-17.0.0_r1",
+    "module_count": 2
+  },
+  {
+    "path": "src/external/abseil-cpp",
+    "aosp_path": "external/abseil-cpp",
+    "url": "https://android.googlesource.com/platform/external/abseil-cpp",
+    "tag": "android-17.0.0_r1",
+    "module_count": 186
+  },
+  {
+    "path": "src/external/compiler-rt",
+    "aosp_path": "external/compiler-rt",
+    "url": "https://android.googlesource.com/platform/external/compiler-rt",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/dng_sdk",
+    "aosp_path": "external/dng_sdk",
+    "url": "https://android.googlesource.com/platform/external/dng_sdk",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/eigen",
+    "aosp_path": "external/eigen",
+    "url": "https://android.googlesource.com/platform/external/eigen",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/expat",
+    "aosp_path": "external/expat",
+    "url": "https://android.googlesource.com/platform/external/expat",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/fft2d",
+    "aosp_path": "external/fft2d",
+    "url": "https://android.googlesource.com/platform/external/fft2d",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/flatbuffers",
+    "aosp_path": "external/flatbuffers",
+    "url": "https://android.googlesource.com/platform/external/flatbuffers",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/fmtlib",
+    "aosp_path": "external/fmtlib",
+    "url": "https://android.googlesource.com/platform/external/fmtlib",
+    "tag": "android-17.0.0_r1",
+    "module_count": 2
+  },
+  {
+    "path": "src/external/freetype",
+    "aosp_path": "external/freetype",
+    "url": "https://android.googlesource.com/platform/external/freetype",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/googletest",
+    "aosp_path": "external/googletest",
+    "url": "https://android.googlesource.com/platform/external/googletest",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/harfbuzz_ng",
+    "aosp_path": "external/harfbuzz_ng",
+    "url": "https://android.googlesource.com/platform/external/harfbuzz_ng",
+    "tag": "android-17.0.0_r1",
+    "module_count": 2
+  },
+  {
+    "path": "src/external/icu",
+    "aosp_path": "external/icu",
+    "url": "https://android.googlesource.com/platform/external/icu",
+    "tag": "android-17.0.0_r1",
+    "module_count": 9
+  },
+  {
+    "path": "src/external/image_io",
+    "aosp_path": "external/image_io",
+    "url": "https://android.googlesource.com/platform/external/image_io",
+    "tag": "android-17.0.0_r1",
+    "module_count": 2
+  },
+  {
+    "path": "src/external/libjpeg-turbo",
+    "aosp_path": "external/libjpeg-turbo",
+    "url": "https://android.googlesource.com/platform/external/libjpeg-turbo",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/libpng",
+    "aosp_path": "external/libpng",
+    "url": "https://android.googlesource.com/platform/external/libpng",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/libtextclassifier",
+    "aosp_path": "external/libtextclassifier",
+    "url": "https://android.googlesource.com/platform/external/libtextclassifier",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/libultrahdr",
+    "aosp_path": "external/libultrahdr",
+    "url": "https://android.googlesource.com/platform/external/libultrahdr",
+    "tag": "android-17.0.0_r1",
+    "module_count": 3
+  },
+  {
+    "path": "src/external/modp_b64",
+    "aosp_path": "external/modp_b64",
+    "url": "https://android.googlesource.com/platform/external/modp_b64",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/perfetto",
+    "aosp_path": "external/perfetto",
+    "url": "https://android.googlesource.com/platform/external/perfetto",
+    "tag": "android-17.0.0_r1",
+    "module_count": 241
+  },
+  {
+    "path": "src/external/piex",
+    "aosp_path": "external/piex",
+    "url": "https://android.googlesource.com/platform/external/piex",
+    "tag": "android-17.0.0_r1",
+    "module_count": 4
+  },
+  {
+    "path": "src/external/regex-re2",
+    "aosp_path": "external/regex-re2",
+    "url": "https://android.googlesource.com/platform/external/regex-re2",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/rust/android-crates-io",
+    "aosp_path": "external/rust/android-crates-io",
+    "url": "https://android.googlesource.com/platform/external/rust/android-crates-io",
+    "tag": "android-17.0.0_r1",
+    "module_count": 39
+  },
+  {
+    "path": "src/external/rust/cxx",
+    "aosp_path": "external/rust/cxx",
+    "url": "https://android.googlesource.com/platform/external/rust/cxx",
+    "tag": "android-17.0.0_r1",
+    "module_count": 4
+  },
+  {
+    "path": "src/external/ruy",
+    "aosp_path": "external/ruy",
+    "url": "https://android.googlesource.com/platform/external/ruy",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/skia",
+    "aosp_path": "external/skia",
+    "url": "https://android.googlesource.com/platform/external/skia",
+    "tag": "android-17.0.0_r1",
+    "module_count": 4
+  },
+  {
+    "path": "src/external/sqlite",
+    "aosp_path": "external/sqlite",
+    "url": "https://android.googlesource.com/platform/external/sqlite",
+    "tag": "android-17.0.0_r1",
+    "module_count": 2
+  },
+  {
+    "path": "src/external/tensorflow",
+    "aosp_path": "external/tensorflow",
+    "url": "https://android.googlesource.com/platform/external/tensorflow",
+    "tag": "android-17.0.0_r1",
+    "module_count": 5
+  },
+  {
+    "path": "src/external/tinyxml2",
+    "aosp_path": "external/tinyxml2",
+    "url": "https://android.googlesource.com/platform/external/tinyxml2",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/webp",
+    "aosp_path": "external/webp",
+    "url": "https://android.googlesource.com/platform/external/webp",
+    "tag": "android-17.0.0_r1",
+    "module_count": 3
+  },
+  {
+    "path": "src/external/wuffs-mirror-release-c",
+    "aosp_path": "external/wuffs-mirror-release-c",
+    "url": "https://android.googlesource.com/platform/external/wuffs-mirror-release-c",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/external/zlib",
+    "aosp_path": "external/zlib",
+    "url": "https://android.googlesource.com/platform/external/zlib",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/frameworks/base",
+    "aosp_path": "frameworks/base",
+    "url": "https://android.googlesource.com/platform/frameworks/base",
+    "tag": "android-17.0.0_r1",
+    "module_count": 24
+  },
+  {
+    "path": "src/frameworks/layoutlib",
+    "aosp_path": "frameworks/layoutlib",
+    "url": "https://android.googlesource.com/platform/frameworks/layoutlib",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/frameworks/minikin",
+    "aosp_path": "frameworks/minikin",
+    "url": "https://android.googlesource.com/platform/frameworks/minikin",
+    "tag": "android-17.0.0_r1",
+    "module_count": 6
+  },
+  {
+    "path": "src/frameworks/native",
+    "aosp_path": "frameworks/native",
+    "url": "https://android.googlesource.com/platform/frameworks/native",
+    "tag": "android-17.0.0_r1",
+    "module_count": 46
+  },
+  {
+    "path": "src/libnativehelper",
+    "aosp_path": "libnativehelper",
+    "url": "https://android.googlesource.com/platform/libnativehelper",
+    "tag": "android-17.0.0_r1",
+    "module_count": 2
+  },
+  {
+    "path": "src/packages/modules/StatsD",
+    "aosp_path": "packages/modules/StatsD",
+    "url": "https://android.googlesource.com/platform/packages/modules/StatsD",
+    "tag": "android-17.0.0_r1",
+    "module_count": 4
+  },
+  {
+    "path": "src/system/core",
+    "aosp_path": "system/core",
+    "url": "https://android.googlesource.com/platform/system/core",
+    "tag": "android-17.0.0_r1",
+    "module_count": 10
+  },
+  {
+    "path": "src/system/incremental_delivery",
+    "aosp_path": "system/incremental_delivery",
+    "url": "https://android.googlesource.com/platform/system/incremental_delivery",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/system/libbase",
+    "aosp_path": "system/libbase",
+    "url": "https://android.googlesource.com/platform/system/libbase",
+    "tag": "android-17.0.0_r1",
+    "module_count": 2
+  },
+  {
+    "path": "src/system/libfmq",
+    "aosp_path": "system/libfmq",
+    "url": "https://android.googlesource.com/platform/system/libfmq",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/system/libhidl",
+    "aosp_path": "system/libhidl",
+    "url": "https://android.googlesource.com/platform/system/libhidl",
+    "tag": "android-17.0.0_r1",
+    "module_count": 9
+  },
+  {
+    "path": "src/system/libhwbinder",
+    "aosp_path": "system/libhwbinder",
+    "url": "https://android.googlesource.com/platform/system/libhwbinder",
+    "tag": "android-17.0.0_r1",
+    "module_count": 2
+  },
+  {
+    "path": "src/system/libsysprop",
+    "aosp_path": "system/libsysprop",
+    "url": "https://android.googlesource.com/platform/system/libsysprop",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/system/libvintf",
+    "aosp_path": "system/libvintf",
+    "url": "https://android.googlesource.com/platform/system/libvintf",
+    "tag": "android-17.0.0_r1",
+    "module_count": 1
+  },
+  {
+    "path": "src/system/libziparchive",
+    "aosp_path": "system/libziparchive",
+    "url": "https://android.googlesource.com/platform/system/libziparchive",
+    "tag": "android-17.0.0_r1",
+    "module_count": 2
+  },
+  {
+    "path": "src/system/logging",
+    "aosp_path": "system/logging",
+    "url": "https://android.googlesource.com/platform/system/logging",
+    "tag": "android-17.0.0_r1",
+    "module_count": 3
+  },
+  {
+    "path": "src/system/server_configurable_flags",
+    "aosp_path": "system/server_configurable_flags",
+    "url": "https://android.googlesource.com/platform/system/server_configurable_flags",
+    "tag": "android-17.0.0_r1",
+    "module_count": 4
+  }
+]

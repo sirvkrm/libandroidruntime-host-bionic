@@ -1,0 +1,12 @@
+src/
+build/
+out/
+.cache/
+__pycache__/
+*.pyc
+*.o
+*.a
+*.so
+graphify-out/.graphify_*
+!graphify-out/GRAPH_REPORT.md
+!graphify-out/graph.json
