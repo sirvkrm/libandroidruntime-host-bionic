@@ -323,6 +323,7 @@ def main() -> None:
             SRC / "frameworks/native/services/surfaceflinger/surfaceflinger_flags.aconfig",
             SRC / "frameworks/native/services/surfaceflinger/surfaceflinger_flags_new.aconfig",
         ]),
+        ("perfetto_flags_c_lib", "production", [SRC / "external/perfetto/perfetto_flags.aconfig"]),
     ]
     gen_root = ROOT / "build/generated/aconfig"
     for name, mode, files in targets:

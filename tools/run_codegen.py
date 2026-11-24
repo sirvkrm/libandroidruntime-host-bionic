@@ -341,6 +341,56 @@ def gen_bindgen() -> None:
     )
     print(f"[ok] bindgen -> {out_rs.relative_to(ROOT)}")
 
+    # 2. libbinder_ndk_bindgen & libbinder_ndk_compat_bindgen
+    binder_bp = parse_bp_file(SRC / "frameworks" / "native" / "libs" / "binder" / "rust" / "Android.bp")
+    binder_ndk_incs = [
+        SRC / "frameworks" / "native" / "libs" / "binder" / "ndk" / "include_ndk",
+        SRC / "frameworks" / "native" / "libs" / "binder" / "ndk" / "include_cpp",
+        SRC / "frameworks" / "native" / "libs" / "binder" / "ndk" / "include_platform",
+        SRC / "libnativehelper" / "include_jni",
+    ]
+    binder_clang_args = [
+        "--target=aarch64-linux-android30",
+        f"--sysroot={ndk_sysroot}",
+        "-x", "c++",
+        "-std=gnu++20",
+        "-DANDROID_PLATFORM",
+        "-D__ANDROID_UNAVAILABLE_SYMBOLS_ARE_WEAK__",
+        "-Wno-unguarded-availability",
+        "-isystem", str(ndk_sysroot / "usr" / "include" / "c++" / "v1"),
+        "-isystem", str(ndk_prebuilt / "lib" / "clang" / "19" / "include"),
+        "-isystem", str(ndk_sysroot / "usr" / "include" / "aarch64-linux-android"),
+        "-isystem", str(ndk_sysroot / "usr" / "include"),
+    ]
+    for d in binder_ndk_incs:
+        binder_clang_args.extend(["-I", str(d)])
+
+    # libbinder_ndk_bindgen
+    b_flags_file = SRC / "frameworks" / "native" / "libs" / "binder" / "rust" / "libbinder_ndk_bindgen_flags.txt"
+    b_flags = [l.strip() for l in b_flags_file.read_text().splitlines() if l.strip()]
+    b_def = next(m for m in binder_bp if m.name == "libbinder_ndk_bindgen_defaults")
+    b_flags.extend([f for f in b_def.props.get("bindgen_flags", []) if f != "--verbose"])
+    out_bnd = GEN / "bindgen" / "libbinder_ndk_bindgen"
+    out_bnd.mkdir(parents=True, exist_ok=True)
+    run(
+        [bindgen, str(SRC / "frameworks/native/libs/binder/rust/sys/BinderBindings.hpp"),
+         "--output", str(out_bnd / "bindings.rs")] + b_flags + ["--"] + binder_clang_args,
+        env={"LIBCLANG_PATH": "/usr/lib/llvm-21/lib"},
+    )
+    print(f"[ok] bindgen -> {(out_bnd / 'bindings.rs').relative_to(ROOT)}")
+
+    # libbinder_ndk_compat_bindgen
+    bc_mod = next(m for m in binder_bp if m.name == "libbinder_ndk_compat_bindgen")
+    bc_flags = [f for f in bc_mod.props.get("bindgen_flags", []) if f != "--verbose"]
+    out_cmp = GEN / "bindgen" / "libbinder_ndk_compat_bindgen"
+    out_cmp.mkdir(parents=True, exist_ok=True)
+    run(
+        [bindgen, str(SRC / "frameworks/native/libs/binder/rust/src/cpp/include/binder_rust.hpp"),
+         "--output", str(out_cmp / "bindings.rs")] + bc_flags + ["--"] + binder_clang_args,
+        env={"LIBCLANG_PATH": "/usr/lib/llvm-21/lib"},
+    )
+    print(f"[ok] bindgen -> {(out_cmp / 'bindings.rs').relative_to(ROOT)}")
+
 
 def gen_perfetto() -> None:
     perf_dir = SRC / "external" / "perfetto"

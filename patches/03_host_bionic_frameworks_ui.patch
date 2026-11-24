@@ -1,0 +1,1462 @@
+diff --git a/frameworks/base/libs/androidfw/AssetManager.cpp b/frameworks/base/libs/androidfw/AssetManager.cpp
+index 5955915c9..1eaa2bf41 100644
+--- a/frameworks/base/libs/androidfw/AssetManager.cpp
++++ b/frameworks/base/libs/androidfw/AssetManager.cpp
+@@ -218,7 +218,7 @@ bool AssetManager::addAssetPath(
+         *cookie = static_cast<int32_t>(mAssetPaths.size());
+     }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     // Load overlays, if any
+     asset_path oap;
+     for (size_t idx = 0; mZipSet.getOverlay(ap.path, idx, &oap); idx++) {
+@@ -584,7 +584,7 @@ bool AssetManager::appendPathToResTable(asset_path& ap, bool appAsLib) const {
+                 ALOGV("Creating shared resources for %s", ap.path.c_str());
+                 sharedRes = new ResTable();
+                 sharedRes->add(ass, idmap, nextEntryIdx + 1, false);
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+                 const char* data = getenv("ANDROID_DATA");
+                 LOG_ALWAYS_FATAL_IF(data == NULL, "ANDROID_DATA not set");
+                 String8 overlaysListPath(data);
+diff --git a/frameworks/base/libs/hwui/HardwareBitmapUploader.h b/frameworks/base/libs/hwui/HardwareBitmapUploader.h
+index c4809dba2..c5b2096d2 100644
+--- a/frameworks/base/libs/hwui/HardwareBitmapUploader.h
++++ b/frameworks/base/libs/hwui/HardwareBitmapUploader.h
+@@ -20,7 +20,7 @@
+ #include <SkRefCnt.h>
+ #include <hwui/Bitmap.h>
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <GLES2/gl2.h>
+ #include <android/hardware_buffer.h>
+ #include <vulkan/vulkan.h>
+@@ -30,7 +30,7 @@ class SkBitmap;
+ 
+ namespace android::uirenderer {
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ struct FormatInfo {
+     AHardwareBuffer_Format bufferFormat;
+     GLint format;
+@@ -48,7 +48,7 @@ public:
+ 
+     static sk_sp<Bitmap> allocateHardwareBitmap(const SkBitmap& sourceBitmap);
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     static bool hasFP16Support();
+     static bool has1010102Support();
+     static bool has10101010Support();
+diff --git a/frameworks/base/libs/hwui/Mesh.h b/frameworks/base/libs/hwui/Mesh.h
+index f66060216..b35aae391 100644
+--- a/frameworks/base/libs/hwui/Mesh.h
++++ b/frameworks/base/libs/hwui/Mesh.h
+@@ -127,14 +127,14 @@ public:
+         }
+ 
+         mSkiaBuffers.fVertexBuffer =
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+                 SkMeshes::MakeVertexBuffer(context, mVertexData.data(), mVertexData.size());
+ #else
+                 SkMeshes::MakeVertexBuffer(mVertexData.data(), mVertexData.size());
+ #endif
+         if (mIndexCount != 0) {
+             mSkiaBuffers.fIndexBuffer =
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+                     SkMeshes::MakeIndexBuffer(context, mIndexData.data(), mIndexData.size());
+ #else
+                     SkMeshes::MakeIndexBuffer(mIndexData.data(), mIndexData.size());
+diff --git a/frameworks/base/libs/hwui/RecordingCanvas.cpp b/frameworks/base/libs/hwui/RecordingCanvas.cpp
+index eb7a1b0f4..5da38b731 100644
+--- a/frameworks/base/libs/hwui/RecordingCanvas.cpp
++++ b/frameworks/base/libs/hwui/RecordingCanvas.cpp
+@@ -641,7 +641,7 @@ struct DrawSkMesh final : Op {
+     mutable bool isGpuBased;
+     mutable GrDirectContext::DirectContextID contextId;
+     void draw(SkCanvas* c, const SkMatrix&) const {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         GrDirectContext* directContext = c->recordingContext()->asDirectContext();
+ 
+         GrDirectContext::DirectContextID id = directContext->directContextID();
+diff --git a/frameworks/base/libs/hwui/RenderNode.cpp b/frameworks/base/libs/hwui/RenderNode.cpp
+index 6cf476be6..3b0a9ad23 100644
+--- a/frameworks/base/libs/hwui/RenderNode.cpp
++++ b/frameworks/base/libs/hwui/RenderNode.cpp
+@@ -34,7 +34,7 @@
+ #include "private/hwui/WebViewFunctor.h"
+ #include "renderthread/CanvasContext.h"
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include "include/gpu/ganesh/SkImageGanesh.h"
+ #endif
+ #include "FeatureFlags.h"
+@@ -408,7 +408,7 @@ std::optional<RenderNode::SnapshotResult> RenderNode::updateSnapshotIfRequired(
+                mImageFilterClipBounds != clipBounds ||
+                mTargetImageFilterLayerSurfaceGenerationId != layerSurfaceGenerationId) {
+         // Otherwise create a new snapshot with the given filter and snapshot
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         if (context) {
+             mSnapshotResult.snapshot = SkImages::MakeWithFilter(
+                     context, snapshot, imageFilter, subset, clipBounds, &mSnapshotResult.outSubset,
+diff --git a/frameworks/base/libs/hwui/RenderNode.h b/frameworks/base/libs/hwui/RenderNode.h
+index c81ae1c36..d6fd892e8 100644
+--- a/frameworks/base/libs/hwui/RenderNode.h
++++ b/frameworks/base/libs/hwui/RenderNode.h
+@@ -306,7 +306,7 @@ private:
+ 
+     // METHODS & FIELDS ONLY USED BY THE SKIA RENDERER
+ public:
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     std::unique_ptr<OoprNode>& getOoprResources() { return mOoprResources; }
+ #endif
+     /**
+@@ -408,7 +408,7 @@ private:
+      */
+     std::unique_ptr<skiapipeline::SkiaDisplayList> mAvailableDisplayList;
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     std::unique_ptr<OoprNode> mOoprResources;
+ #endif
+ 
+diff --git a/frameworks/base/libs/hwui/RootRenderNode.cpp b/frameworks/base/libs/hwui/RootRenderNode.cpp
+index 5174e27ae..b49cd5595 100644
+--- a/frameworks/base/libs/hwui/RootRenderNode.cpp
++++ b/frameworks/base/libs/hwui/RootRenderNode.cpp
+@@ -16,7 +16,7 @@
+ 
+ #include "RootRenderNode.h"
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support Looper (windows)
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support Looper (windows)
+ #include <utils/Looper.h>
+ #else
+ #include "utils/MessageHandler.h"
+@@ -238,7 +238,7 @@ void RootRenderNode::detachVectorDrawableAnimator(PropertyValuesAnimatorSet* ani
+         // user events, in which case the already posted listener's id will become stale, and
+         // the onFinished callback will then be ignored.
+         sp<FinishAndInvokeListener> message = new FinishAndInvokeListener(anim);
+-#ifdef __ANDROID__  // Layoutlib does not support Looper
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)  // Layoutlib does not support Looper
+         auto looper = Looper::getForThread();
+         LOG_ALWAYS_FATAL_IF(looper == nullptr, "Not on a looper thread?");
+         looper->sendMessageDelayed(ms2ns(remainingTimeInMs), message, 0);
+diff --git a/frameworks/base/libs/hwui/Tonemapper.cpp b/frameworks/base/libs/hwui/Tonemapper.cpp
+index 58fc0335b..844e58183 100644
+--- a/frameworks/base/libs/hwui/Tonemapper.cpp
++++ b/frameworks/base/libs/hwui/Tonemapper.cpp
+@@ -19,7 +19,7 @@
+ #include <SkRuntimeEffect.h>
+ #include <log/log.h>
+ // libshaders only exists on Android devices
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <renderthread/CanvasContext.h>
+ #include <shaders/shaders.h>
+ #endif
+@@ -31,7 +31,7 @@ namespace android::uirenderer {
+ namespace {
+ 
+ // custom tonemapping only exists on Android devices
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ class ColorFilterRuntimeEffectBuilder : public SkRuntimeEffectBuilder {
+ public:
+     explicit ColorFilterRuntimeEffectBuilder(sk_sp<SkRuntimeEffect> effect)
+@@ -106,7 +106,7 @@ static ui::Dataspace getDataspace(const SkImageInfo& image) {
+ void tonemapPaint(const SkImageInfo& source, const SkImageInfo& destination, float maxLuminanceNits,
+                   SkPaint& paint) {
+ // custom tonemapping only exists on Android devices
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     const auto sourceDataspace = getDataspace(source);
+     const auto destinationDataspace = getDataspace(destination);
+ 
+diff --git a/frameworks/base/libs/hwui/WebViewFunctorManager.h b/frameworks/base/libs/hwui/WebViewFunctorManager.h
+index ac16f9138..4b5356b45 100644
+--- a/frameworks/base/libs/hwui/WebViewFunctorManager.h
++++ b/frameworks/base/libs/hwui/WebViewFunctorManager.h
+@@ -104,7 +104,7 @@ private:
+     bool mHasContext = false;
+     bool mCreatedHandle = false;
+     int32_t mParentSurfaceControlGenerationId = 0;
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     sp<SurfaceControl> mSurfaceControl = nullptr;
+ #endif
+     std::vector<pid_t> mRenderingThreads;
+diff --git a/frameworks/base/libs/hwui/hwui/Bitmap.cpp b/frameworks/base/libs/hwui/hwui/Bitmap.cpp
+index 9cefd8ddb..8761f96b9 100644
+--- a/frameworks/base/libs/hwui/hwui/Bitmap.cpp
++++ b/frameworks/base/libs/hwui/hwui/Bitmap.cpp
+@@ -24,7 +24,7 @@
+ #include "OutOfProcessRendering.h"
+ #include "Properties.h"
+ #include "utils/Color.h"
+-#ifdef __ANDROID__  // Layoutlib does not support render thread
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)  // Layoutlib does not support render thread
+ #include <private/android/AHardwareBufferHelpers.h>
+ #include <ui/GraphicBuffer.h>
+ #include <ui/GraphicBufferMapper.h>
+@@ -66,7 +66,7 @@
+ 
+ namespace android {
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ static uint64_t AHardwareBuffer_getAllocationSize(AHardwareBuffer* aHardwareBuffer) {
+     GraphicBuffer* buffer = AHardwareBuffer_to_GraphicBuffer(aHardwareBuffer);
+     auto& mapper = GraphicBufferMapper::get();
+@@ -171,7 +171,7 @@ sk_sp<Bitmap> Bitmap::allocateAshmemBitmap(SkBitmap* bitmap) {
+ }
+ 
+ sk_sp<Bitmap> Bitmap::allocateAshmemBitmap(size_t size, const SkImageInfo& info, size_t rowBytes) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     // Create new ashmem region with read/write priv
+     uint64_t id = getId(PixelStorageType::Ashmem);
+     auto ashmemId = getAshmemId("allocate", id, info.width(), info.height(), size);
+@@ -198,7 +198,7 @@ sk_sp<Bitmap> Bitmap::allocateAshmemBitmap(size_t size, const SkImageInfo& info,
+ }
+ 
+ sk_sp<Bitmap> Bitmap::allocateHardwareBitmap(const SkBitmap& bitmap) {
+-#ifdef __ANDROID__  // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)  // Layoutlib does not support hardware acceleration
+     return uirenderer::HardwareBitmapUploader::allocateHardwareBitmap(bitmap);
+ #else
+     sk_sp<Bitmap> dest = Bitmap::allocateHeapBitmap(bitmap.info());
+@@ -238,7 +238,7 @@ sk_sp<Bitmap> Bitmap::createFrom(const SkImageInfo& info, SkPixelRef& pixelRef)
+ }
+ 
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+ sk_sp<Bitmap> Bitmap::createFrom(AHardwareBuffer* hardwareBuffer, sk_sp<SkColorSpace> colorSpace,
+                                  BitmapPalette palette) {
+     AHardwareBuffer_Desc bufferDesc;
+@@ -348,7 +348,7 @@ Bitmap::Bitmap(void* address, int fd, size_t mappedSize, const SkImageInfo& info
+     traceBitmapCreate();
+ }
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+ Bitmap::Bitmap(AHardwareBuffer* buffer, const SkImageInfo& info, size_t rowBytes,
+                BitmapPalette palette)
+         : SkPixelRef(info.width(), info.height(), nullptr, rowBytes)
+@@ -383,13 +383,13 @@ Bitmap::~Bitmap() {
+             break;
+         case PixelStorageType::Heap:
+             free(mPixelStorage.heap.address);
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+             // Use a purge that will not block for a long time.
+             mallopt(M_PURGE_FAST, 0);
+ #endif
+             break;
+         case PixelStorageType::Hardware:
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+             uirenderer::OoprClient::getInstance()->deregisterBuffer(mImage);
+             auto buffer = mPixelStorage.hardware.buffer;
+             AHardwareBuffer_release(buffer);
+@@ -422,7 +422,7 @@ size_t Bitmap::getAllocationByteCount() const {
+             return mPixelStorage.heap.size;
+         case PixelStorageType::Ashmem:
+             return mPixelStorage.ashmem.size;
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         case PixelStorageType::Hardware:
+             return mPixelStorage.hardware.size;
+ #endif
+@@ -444,7 +444,7 @@ void Bitmap::setAlphaType(SkAlphaType alphaType) {
+ }
+ 
+ void Bitmap::getSkBitmap(SkBitmap* outBitmap) {
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+     if (isHardware()) {
+         outBitmap->allocPixels(mInfo);
+         uirenderer::renderthread::RenderProxy::copyHWBitmapInto(this, outBitmap);
+@@ -460,7 +460,7 @@ void Bitmap::getBounds(SkRect* bounds) const {
+     bounds->setIWH(width(), height());
+ }
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+ AHardwareBuffer* Bitmap::hardwareBuffer() {
+     if (isHardware()) {
+         return mPixelStorage.hardware.buffer;
+@@ -479,7 +479,7 @@ sk_sp<SkImage> Bitmap::makeImage() {
+         // Note we don't cache in this case, because the raster image holds a pointer to this Bitmap
+         // internally and ~Bitmap won't be invoked.
+         // TODO: refactor Bitmap to not derive from SkPixelRef, which would allow caching here.
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         // pinnable images are only supported with the Ganesh GPU backend compiled in.
+         image = SkImages::PinnableRasterFromBitmap(skiaBitmap);
+ 
+diff --git a/frameworks/base/libs/hwui/hwui/Bitmap.h b/frameworks/base/libs/hwui/hwui/Bitmap.h
+index 5c7e123af..6d86298e1 100644
+--- a/frameworks/base/libs/hwui/hwui/Bitmap.h
++++ b/frameworks/base/libs/hwui/hwui/Bitmap.h
+@@ -28,7 +28,7 @@
+ #include <mutex>
+ #include <optional>
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+ #include <android/hardware_buffer.h>
+ 
+ #include "OutOfProcessRendering.h"
+@@ -92,7 +92,7 @@ public:
+     /* The createFrom factories construct a new Bitmap object by wrapping the already allocated
+      * memory that is provided as an input param.
+      */
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+     static sk_sp<Bitmap> createFrom(AHardwareBuffer* hardwareBuffer,
+                                     sk_sp<SkColorSpace> colorSpace,
+                                     BitmapPalette palette = BitmapPalette::Unknown);
+@@ -150,7 +150,7 @@ public:
+ 
+     PixelStorageType pixelStorageType() const { return mPixelStorageType; }
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+      AHardwareBuffer* hardwareBuffer();
+ #endif
+ 
+@@ -205,7 +205,7 @@ private:
+     Bitmap(SkPixelRef& pixelRef, const SkImageInfo& info);
+     Bitmap(void* address, int fd, size_t mappedSize, const SkImageInfo& info, size_t rowBytes,
+            uint64_t id = UNDEFINED_BITMAP_ID);
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+     Bitmap(AHardwareBuffer* buffer, const SkImageInfo& info, size_t rowBytes,
+            BitmapPalette palette);
+ 
+@@ -242,7 +242,7 @@ private:
+             void* address;
+             size_t size;
+         } heap;
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+         struct {
+             AHardwareBuffer* buffer;
+             uint64_t size;
+@@ -264,7 +264,7 @@ private:
+     void traceBitmapCreate();
+     void traceBitmapDelete();
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     uirenderer::OoprBitmap mOoprResources;
+ #endif
+ };
+diff --git a/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.cpp b/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.cpp
+index 9d1fe2a96..641997408 100644
+--- a/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.cpp
++++ b/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.cpp
+@@ -21,7 +21,7 @@
+ 
+ #include "HardwareBitmapUploader.h"
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <android/ipcrenderbuffer/RenderBufferOps.h>
+ #include <com_android_graphics_libgui_flags.h>
+ #include <gui/GraphicBuffersRegisterInfo.h>
+@@ -45,7 +45,7 @@
+ namespace android {
+ namespace uirenderer {
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ 
+ sp<GraphicBuffer> allocGraphicBufferFromBitmap(const SkImageInfo& info) {
+     uint32_t usage = GRALLOC_USAGE_HW_TEXTURE | GRALLOC_USAGE_SW_WRITE_RARELY;
+diff --git a/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.h b/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.h
+index 8ebbadf53..06b1bc5e5 100644
+--- a/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.h
++++ b/frameworks/base/libs/hwui/hwui/OutOfProcessRendering.h
+@@ -37,18 +37,18 @@ class AutoBackendTextureRelease;
+ }
+ }  // namespace android
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <android/hardware_buffer.h>
+ #endif
+ 
+ namespace android {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ struct IPCClientResourceCache;
+ #endif
+ 
+ namespace uirenderer {
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ class OoprClient;
+ 
+ struct OoprNode {
+diff --git a/frameworks/base/libs/hwui/jni/AnimatedImageDrawable.cpp b/frameworks/base/libs/hwui/jni/AnimatedImageDrawable.cpp
+index 9c37337d2..a2d1f7f22 100644
+--- a/frameworks/base/libs/hwui/jni/AnimatedImageDrawable.cpp
++++ b/frameworks/base/libs/hwui/jni/AnimatedImageDrawable.cpp
+@@ -25,7 +25,7 @@
+ #include <hwui/AnimatedImageDrawable.h>
+ #include <hwui/Canvas.h>
+ #include <hwui/ImageDecoder.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <utils/Looper.h>
+ #else
+ #include "utils/MessageHandler.h"
+@@ -209,7 +209,7 @@ private:
+ };
+ 
+ class JniAnimationEndListener : public OnAnimationEndListener {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ public:
+     JniAnimationEndListener(sp<Looper>&& looper, JNIEnv* env, jobject javaObject) {
+         mListener = new InvokeListener(env, javaObject);
+@@ -262,7 +262,7 @@ private:
+ };
+ 
+ class JniFrameRateHintListener : public OnFrameRateHintListener {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ public:
+     JniFrameRateHintListener(sp<Looper>&& looper, JNIEnv* env, jobject javaObject) {
+         mListener = new InvokeFrameRateHintListener(env, javaObject);
+@@ -303,7 +303,7 @@ static void AnimatedImageDrawable_nSetOnAnimationEndListener(JNIEnv* env, jobjec
+     if (!jdrawable) {
+         drawable->setOnAnimationEndListener(nullptr);
+     } else {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         sp<Looper> looper = Looper::getForThread();
+         if (!looper.get()) {
+             doThrowISE(env,
+@@ -327,7 +327,7 @@ static void AnimatedImageDrawable_nSetOnFrameRateHintListener(JNIEnv* env, jobje
+     if (!jdrawable) {
+         drawable->setOnFrameRateHintListener(nullptr);
+     } else {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         sp<Looper> looper = Looper::getForThread();
+         if (!looper.get()) {
+             doThrowISE(
+diff --git a/frameworks/base/libs/hwui/jni/Bitmap.cpp b/frameworks/base/libs/hwui/jni/Bitmap.cpp
+index d97d1bca4..4a188630e 100644
+--- a/frameworks/base/libs/hwui/jni/Bitmap.cpp
++++ b/frameworks/base/libs/hwui/jni/Bitmap.cpp
+@@ -1318,7 +1318,7 @@ static jobject Bitmap_copyPreserveInternalConfig(JNIEnv* env, jobject, jlong bit
+ 
+ static jobject Bitmap_wrapHardwareBufferBitmap(JNIEnv* env, jobject, jobject hardwareBuffer,
+                                                jlong colorSpacePtr) {
+-#ifdef __ANDROID__ // Layoutlib does not support graphic buffer
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support graphic buffer
+     AHardwareBuffer* buffer = uirenderer::HardwareBufferHelpers::AHardwareBuffer_fromHardwareBuffer(
+             env, hardwareBuffer);
+     sk_sp<Bitmap> bitmap = Bitmap::createFrom(buffer,
+@@ -1334,7 +1334,7 @@ static jobject Bitmap_wrapHardwareBufferBitmap(JNIEnv* env, jobject, jobject har
+ }
+ 
+ static jobject Bitmap_getHardwareBuffer(JNIEnv* env, jobject, jlong bitmapPtr) {
+-#ifdef __ANDROID__ // Layoutlib does not support graphic buffer
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support graphic buffer
+     LocalScopedBitmap bitmapHandle(bitmapPtr);
+     if (!bitmapHandle->isHardware()) {
+         jniThrowException(env, "java/lang/IllegalStateException",
+diff --git a/frameworks/base/libs/hwui/jni/Gainmap.cpp b/frameworks/base/libs/hwui/jni/Gainmap.cpp
+index 71972d01b..c7102ee9a 100644
+--- a/frameworks/base/libs/hwui/jni/Gainmap.cpp
++++ b/frameworks/base/libs/hwui/jni/Gainmap.cpp
+@@ -19,7 +19,7 @@
+ #include "SkColorType.h"
+ #include "SkGainmapInfo.h"
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <binder/Parcel.h>
+ #endif
+ 
+@@ -229,7 +229,7 @@ static jint Gainmap_getDirection(JNIEnv* env, jobject, jlong gainmapPtr) {
+ // ----------------------------------------------------------------------------
+ 
+ static void Gainmap_writeToParcel(JNIEnv* env, jobject, jlong nativeObject, jobject parcel) {
+-#ifdef __ANDROID__  // Layoutlib does not support parcel
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)  // Layoutlib does not support parcel
+     if (parcel == NULL) {
+         ALOGD("write null parcel\n");
+         return;
+@@ -269,7 +269,7 @@ static void Gainmap_writeToParcel(JNIEnv* env, jobject, jlong nativeObject, jobj
+ }
+ 
+ static void Gainmap_readFromParcel(JNIEnv* env, jobject, jlong nativeObject, jobject parcel) {
+-#ifdef __ANDROID__  // Layoutlib does not support parcel
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)  // Layoutlib does not support parcel
+     if (parcel == NULL) {
+         jniThrowNullPointerException(env, "parcel cannot be null");
+         return;
+diff --git a/frameworks/base/libs/hwui/jni/HardwareBufferHelpers.cpp b/frameworks/base/libs/hwui/jni/HardwareBufferHelpers.cpp
+index d3b48d36b..c0cb6de98 100644
+--- a/frameworks/base/libs/hwui/jni/HardwareBufferHelpers.cpp
++++ b/frameworks/base/libs/hwui/jni/HardwareBufferHelpers.cpp
+@@ -16,12 +16,12 @@
+ 
+ #include "HardwareBufferHelpers.h"
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <dlfcn.h>
+ #endif
+ #include <log/log.h>
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ typedef AHardwareBuffer* (*AHB_from_HB)(JNIEnv*, jobject);
+ typedef jobject (*AHB_to_HB)(JNIEnv*, AHardwareBuffer*);
+ static AHB_from_HB fromHardwareBuffer = nullptr;
+@@ -29,7 +29,7 @@ static AHB_to_HB toHardwareBuffer = nullptr;
+ #endif
+ 
+ void android::uirenderer::HardwareBufferHelpers::init() {
+-#ifdef __ANDROID__  // Layoutlib does not support graphic buffer or parcel
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)  // Layoutlib does not support graphic buffer or parcel
+     void* handle_ = dlopen("libandroid.so", RTLD_NOW | RTLD_NODELETE);
+     fromHardwareBuffer = (AHB_from_HB)dlsym(handle_, "AHardwareBuffer_fromHardwareBuffer");
+     LOG_ALWAYS_FATAL_IF(fromHardwareBuffer == nullptr,
+@@ -43,7 +43,7 @@ void android::uirenderer::HardwareBufferHelpers::init() {
+ 
+ AHardwareBuffer* android::uirenderer::HardwareBufferHelpers::AHardwareBuffer_fromHardwareBuffer(
+         JNIEnv* env, jobject hardwarebuffer) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     LOG_ALWAYS_FATAL_IF(fromHardwareBuffer == nullptr,
+                         "Failed to find symbol AHardwareBuffer_fromHardwareBuffer, did you forget "
+                         "to call HardwareBufferHelpers::init?");
+@@ -57,7 +57,7 @@ AHardwareBuffer* android::uirenderer::HardwareBufferHelpers::AHardwareBuffer_fro
+ 
+ jobject android::uirenderer::HardwareBufferHelpers::AHardwareBuffer_toHardwareBuffer(
+         JNIEnv* env, AHardwareBuffer* ahardwarebuffer) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     LOG_ALWAYS_FATAL_IF(toHardwareBuffer == nullptr,
+                         "Failed to find symbol AHardwareBuffer_toHardwareBuffer, did you forget to "
+                         "call HardwareBufferHelpers::init?");
+diff --git a/frameworks/base/libs/hwui/jni/Paint.cpp b/frameworks/base/libs/hwui/jni/Paint.cpp
+index 3fbd95b1d..49e8fc1ce 100644
+--- a/frameworks/base/libs/hwui/jni/Paint.cpp
++++ b/frameworks/base/libs/hwui/jni/Paint.cpp
+@@ -621,7 +621,7 @@ namespace PaintGlue {
+         font->setEmbolden(savefakeBold);
+ 
+         // Don't use hard coded vertical metrics if target SDK is 35 or later.
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         uint32_t isTargetSdk35OrLater = android_get_application_target_sdk_version() >= 35;
+ #else
+         uint32_t isTargetSdk35OrLater = true;
+diff --git a/frameworks/base/libs/hwui/jni/PathIterator.cpp b/frameworks/base/libs/hwui/jni/PathIterator.cpp
+index 5d77c1513..7ba2409b6 100644
+--- a/frameworks/base/libs/hwui/jni/PathIterator.cpp
++++ b/frameworks/base/libs/hwui/jni/PathIterator.cpp
+@@ -41,7 +41,7 @@ public:
+     // A variant of 'next' (below) that is compatible with the host JVM.
+     static jint nextHost(JNIEnv* env, jclass clazz, jlong iteratorHandle, jfloatArray pointsArray) {
+         jfloat* points = env->GetFloatArrayElements(pointsArray, 0);
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         jint result = next(iteratorHandle, reinterpret_cast<jlong>(points));
+ #else
+         jint result = next(env, clazz, iteratorHandle, reinterpret_cast<jlong>(points));
+diff --git a/frameworks/base/libs/hwui/jni/Typeface.cpp b/frameworks/base/libs/hwui/jni/Typeface.cpp
+index 632e143c5..2791fd681 100644
+--- a/frameworks/base/libs/hwui/jni/Typeface.cpp
++++ b/frameworks/base/libs/hwui/jni/Typeface.cpp
+@@ -37,7 +37,7 @@
+ #include "SkTypeface.h"
+ #include "fonts/Font.h"
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <sys/stat.h>
+ #endif
+ 
+@@ -150,7 +150,7 @@ static void Typeface_registerGenericFamily(JNIEnv *env, jobject, jstring familyN
+                                            toTypeface(ptr)->getFontCollection());
+ }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ 
+ static bool getVerity(const std::string& path) {
+     struct statx out = {};
+diff --git a/frameworks/base/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp b/frameworks/base/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp
+index cf47cf08b..f5da31e07 100644
+--- a/frameworks/base/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp
++++ b/frameworks/base/libs/hwui/jni/android_graphics_DisplayListCanvas.cpp
+@@ -16,7 +16,7 @@
+ 
+ #include "GraphicsJNI.h"
+ 
+-#ifdef __ANDROID__  // Layoutlib does not support Looper
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)  // Layoutlib does not support Looper
+ #include <utils/Looper.h>
+ #endif
+ 
+@@ -44,7 +44,7 @@ static JNIEnv* jnienv(JavaVM* vm) {
+     return env;
+ }
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support GL, Looper
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support GL, Looper
+ class InvokeRunnableMessage : public MessageHandler {
+ public:
+     InvokeRunnableMessage(JNIEnv* env, jobject runnable) {
+diff --git a/frameworks/base/libs/hwui/jni/android_graphics_HardwareRenderer.cpp b/frameworks/base/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
+index 35161f70e..18479f212 100644
+--- a/frameworks/base/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
++++ b/frameworks/base/libs/hwui/jni/android_graphics_HardwareRenderer.cpp
+@@ -38,7 +38,7 @@
+ #include <media/NdkImage.h>
+ #include <media/NdkImageReader.h>
+ #include <nativehelper/JNIPlatformHelp.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <pipeline/skia/PersistentGraphicsCache.h>
+ #include <pipeline/skia/ShaderCache.h>
+ #include <private/EGL/cache.h>
+@@ -49,7 +49,7 @@
+ #include <renderthread/RenderThread.h>
+ #include <src/image/SkImage_Base.h>
+ #include <thread/CommonPool.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <gui/BLASTBufferQueue.h>
+ #include <gui/SurfaceControl.h>
+ #include <ui/GraphicBufferAllocator.h>
+@@ -238,7 +238,7 @@ static void android_view_ThreadedRenderer_setSurface(JNIEnv* env, jobject clazz,
+ static void android_view_ThreadedRenderer_setSurfaceControl(JNIEnv* env, jobject clazz,
+                                                             jlong proxyPtr,
+                                                             jlong surfaceControlPtr) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
+     SurfaceControl* surfaceControl = reinterpret_cast<SurfaceControl*>(surfaceControlPtr);
+     proxy->setSurfaceControl(sp<SurfaceControl>::fromExisting(surfaceControl));
+@@ -247,7 +247,7 @@ static void android_view_ThreadedRenderer_setSurfaceControl(JNIEnv* env, jobject
+ 
+ static void android_view_ThreadedRenderer_setBLASTBufferQueue(JNIEnv* env, jobject clazz,
+                                                               jlong proxyPtr, jlong bbqPtr) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
+     BLASTBufferQueue* bbq = reinterpret_cast<BLASTBufferQueue*>(bbqPtr);
+     proxy->setBLASTBufferQueue(sp<BLASTBufferQueue>::fromExisting(bbq));
+@@ -257,7 +257,7 @@ static void android_view_ThreadedRenderer_setBLASTBufferQueue(JNIEnv* env, jobje
+ static void android_view_ThreadedRenderer_setCornerRadiiCallback(JNIEnv* env, jobject clazz,
+                                                                  jlong proxyPtr,
+                                                                  jobject callback) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
+     if (!callback) {
+         proxy->setCornerRadiiCallback(nullptr);
+@@ -297,7 +297,7 @@ static void android_view_ThreadedRenderer_setCornerRadiiCallback(JNIEnv* env, jo
+ 
+ static void android_view_ThreadedRenderer_setWaitForBufferReleaseCallback(
+         JNIEnv* env, jobject clazz, jlong proxyPtr, jobject callback) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(proxyPtr);
+     if (!callback) {
+         proxy->setWaitForBufferReleaseCallback(nullptr);
+@@ -326,7 +326,7 @@ static void android_view_ThreadedRenderer_setWaitForBufferReleaseCallback(
+ static bool android_view_ThreadedRenderer_syncNextTransaction(JNIEnv* env, jclass clazz, jlong ptr,
+                                                               jobject callback,
+                                                               jboolean acquireSingleBuffer) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     LOG_ALWAYS_FATAL_IF(!callback, "callback passed in to syncNextTransaction must not be NULL");
+ 
+     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
+@@ -352,7 +352,7 @@ static bool android_view_ThreadedRenderer_syncNextTransaction(JNIEnv* env, jclas
+ static void android_view_ThreadedRenderer_mergeWithNextTransaction(JNIEnv*, jclass clazz, jlong ptr,
+                                                                    jlong transactionPtr,
+                                                                    jlong framenumber) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
+     auto transaction = reinterpret_cast<SurfaceComposerClient::Transaction*>(transactionPtr);
+     proxy->mergeWithNextTransaction(transaction, CC_UNLIKELY(framenumber < 0) ? 0 : framenumber);
+@@ -361,7 +361,7 @@ static void android_view_ThreadedRenderer_mergeWithNextTransaction(JNIEnv*, jcla
+ 
+ static void android_view_ThreadedRenderer_applyPendingTransactions(JNIEnv* env, jclass clazz,
+                                                                    jlong ptr, jlong frameNum) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
+     proxy->applyPendingTransactions(frameNum);
+ #endif
+@@ -369,7 +369,7 @@ static void android_view_ThreadedRenderer_applyPendingTransactions(JNIEnv* env,
+ 
+ static void android_view_ThreadedRenderer_clearSyncTransaction(JNIEnv* env, jclass clazz,
+                                                                jlong ptr) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
+     proxy->clearSyncTransaction();
+ #endif
+@@ -377,7 +377,7 @@ static void android_view_ThreadedRenderer_clearSyncTransaction(JNIEnv* env, jcla
+ 
+ static jobject android_view_ThreadedRenderer_gatherPendingTransactions(JNIEnv* env, jclass clazz,
+                                                                        jlong ptr, jlong frameNum) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     RenderProxy* proxy = reinterpret_cast<RenderProxy*>(ptr);
+     SurfaceComposerClient::Transaction* transaction = proxy->gatherPendingTransactions(frameNum);
+     return env->NewObject(gTransactionClassInfo.clazz, gTransactionClassInfo.ctor,
+@@ -684,7 +684,7 @@ public:
+                 return sk_ref_sp(img);
+             }
+             bm.setImmutable();
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+             return SkImages::PinnableRasterFromBitmap(bm);
+ #else
+             return SkImages::RasterFromBitmapNoCopy(bm);
+@@ -904,7 +904,7 @@ public:
+ 
+ static jobject android_view_ThreadedRenderer_createHardwareBitmapFromRenderNode(JNIEnv* env,
+         jobject clazz, jlong renderNodePtr, jint jwidth, jint jheight) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     RenderNode* renderNode = reinterpret_cast<RenderNode*>(renderNodePtr);
+     if (jwidth <= 0 || jheight <= 0) {
+         ALOGW("Invalid width %d or height %d", jwidth, jheight);
+@@ -1034,7 +1034,7 @@ static int android_view_ThreadedRenderer_preload(JNIEnv*, jclass) {
+ }
+ 
+ static void android_view_ThreadedRenderer_preInitBufferAllocator(JNIEnv*, jclass) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     CommonPool::async([] {
+         ATRACE_NAME("preInitBufferAllocator:GraphicBufferAllocator");
+         // This involves several binder calls which we do not want blocking
+@@ -1139,7 +1139,7 @@ static void android_view_ThreadedRenderer_removeObserver(JNIEnv* env, jclass cla
+ static void android_view_ThreadedRenderer_setupPersistentGraphicsCache(
+         JNIEnv* env, jobject clazz, jstring openglShaderCachePath, jstring skiaShaderCachePath,
+         jstring skiaPipelineCachePath) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     const char* openglShaderCachePathArray = env->GetStringUTFChars(openglShaderCachePath, NULL);
+     android::egl_set_cache_filename(openglShaderCachePathArray);
+     env->ReleaseStringUTFChars(openglShaderCachePath, openglShaderCachePathArray);
+@@ -1358,7 +1358,7 @@ int register_android_view_ThreadedRenderer(JNIEnv* env) {
+     gCopyRequest.getDestinationBitmap =
+             GetMethodIDOrDie(env, copyRequest, "getDestinationBitmap", "(II)J");
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     void* handle_ = SharedLib::openSharedLib("libandroid");
+ #else
+     void* handle_ = SharedLib::openSharedLib("libandroid_runtime");
+@@ -1367,7 +1367,7 @@ int register_android_view_ThreadedRenderer(JNIEnv* env) {
+     LOG_ALWAYS_FATAL_IF(fromSurface == nullptr,
+                         "Failed to find required symbol ANativeWindow_fromSurface!");
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     jclass transactionClazz = FindClassOrDie(env, "android/view/SurfaceControl$Transaction");
+     gTransactionClassInfo.clazz = MakeGlobalRefOrDie(env, transactionClazz);
+     gTransactionClassInfo.ctor =
+diff --git a/frameworks/base/libs/hwui/jni/graphics_jni_helpers.h b/frameworks/base/libs/hwui/jni/graphics_jni_helpers.h
+index ff26ec177..a4de9f2ab 100644
+--- a/frameworks/base/libs/hwui/jni/graphics_jni_helpers.h
++++ b/frameworks/base/libs/hwui/jni/graphics_jni_helpers.h
+@@ -28,7 +28,7 @@
+ // and they need all the JNI methods to have JNIEnv* and jclass/jobject as their first two arguments.
+ // The following macro allows to have those arguments when compiling for host while omitting them when
+ // compiling for Android.
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #define CRITICAL_JNI_PARAMS
+ #define CRITICAL_JNI_PARAMS_COMMA
+ #else
+diff --git a/frameworks/base/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp b/frameworks/base/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp
+index dcc965b64..07fff2fdd 100644
+--- a/frameworks/base/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp
++++ b/frameworks/base/libs/hwui/pipeline/skia/BackdropFilterDrawable.cpp
+@@ -22,7 +22,7 @@
+ #include "RenderNode.h"
+ #include "RenderNodeDrawable.h"
+ #include "ReorderBarrierDrawables.h"
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include "include/gpu/ganesh/SkImageGanesh.h"
+ #endif
+ 
+@@ -66,7 +66,7 @@ void BackdropFilterDrawable::forceDraw(SkCanvas* canvas) const {
+     SkIPoint offset;
+     SkIRect imageSubset;
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     if (canvas->recordingContext()) {
+         backdropImage =
+                 SkImages::MakeWithFilter(canvas->recordingContext(), backdropImage, backdropFilter,
+diff --git a/frameworks/base/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp b/frameworks/base/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
+index e505b37ee..c2aedd386 100644
+--- a/frameworks/base/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
++++ b/frameworks/base/libs/hwui/pipeline/skia/RenderNodeDrawable.cpp
+@@ -23,7 +23,7 @@
+ #include <SkRect.h>
+ #include <gui/TraceUtils.h>
+ #include <include/effects/SkImageFilters.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <include/gpu/ganesh/SkImageGanesh.h>
+ #endif
+ 
+@@ -288,7 +288,7 @@ void RenderNodeDrawable::drawContent(SkCanvas* canvas) const {
+                 if (imageFilter) {
+                     auto subset = SkIRect::MakeWH(srcBounds.width(), srcBounds.height());
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+                     if (recordingContext) {
+                         snapshotImage = SkImages::MakeWithFilter(
+                                 recordingContext, snapshotImage, imageFilter, subset,
+diff --git a/frameworks/base/libs/hwui/pipeline/skia/SkiaDisplayList.cpp b/frameworks/base/libs/hwui/pipeline/skia/SkiaDisplayList.cpp
+index 442bdc221..3be0b2f78 100644
+--- a/frameworks/base/libs/hwui/pipeline/skia/SkiaDisplayList.cpp
++++ b/frameworks/base/libs/hwui/pipeline/skia/SkiaDisplayList.cpp
+@@ -104,7 +104,7 @@ bool SkiaDisplayList::prepareListAndChildren(
+         info.canvasContext.unpinImages();
+     }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     auto grContext = info.canvasContext.getGrContext();
+     for (const auto& bufferData : mMeshBufferData) {
+         bufferData->updateBuffers(grContext);
+diff --git a/frameworks/base/libs/hwui/pipeline/skia/SkiaPipeline.h b/frameworks/base/libs/hwui/pipeline/skia/SkiaPipeline.h
+index cad9b738e..2c6878c9b 100644
+--- a/frameworks/base/libs/hwui/pipeline/skia/SkiaPipeline.h
++++ b/frameworks/base/libs/hwui/pipeline/skia/SkiaPipeline.h
+@@ -20,7 +20,7 @@
+ #include <SkDocument.h>
+ #include <SkSurface.h>
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <gui/BLASTBufferQueue.h>
+ #endif
+ 
+@@ -70,7 +70,7 @@ public:
+     }
+ 
+     void setTargetSdrHdrRatio(float ratio) override;
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     virtual void setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) { mBLASTBufferQueue = bbq; }
+ 
+     void setCornerRadiiCallback(
+@@ -239,7 +239,7 @@ private:
+     // Not used in other recording modes.
+     std::function<void(sk_sp<SkPicture>&&)> mPictureCapturedCallback;
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     sp<BLASTBufferQueue> mBLASTBufferQueue;
+ #endif
+ };
+diff --git a/frameworks/base/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp b/frameworks/base/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp
+index fc364d917..aa946ef0a 100644
+--- a/frameworks/base/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp
++++ b/frameworks/base/libs/hwui/pipeline/skia/SkiaRecordingCanvas.cpp
+@@ -32,7 +32,7 @@
+ 
+ #include "CanvasTransform.h"
+ #include "hwui/Paint.h"
+-#ifdef __ANDROID__ // Layoutlib does not support Layers
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support Layers
+ #include "Layer.h"
+ #include "LayerDrawable.h"
+ #endif
+@@ -40,7 +40,7 @@
+ #include "RenderNode.h"
+ #include "pipeline/skia/AnimatedDrawables.h"
+ #include "pipeline/skia/BackdropFilterDrawable.h"
+-#ifdef __ANDROID__ // Layoutlib does not support GL, Vulcan etc.
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support GL, Vulcan etc.
+ #include "pipeline/skia/GLFunctorDrawable.h"
+ #include "pipeline/skia/VkFunctorDrawable.h"
+ #include "pipeline/skia/VkInteropFunctorDrawable.h"
+@@ -153,7 +153,7 @@ void SkiaRecordingCanvas::enableZ(bool enableZ) {
+ }
+ 
+ void SkiaRecordingCanvas::drawLayer(uirenderer::DeferredLayerUpdater* layerUpdater) {
+-#ifdef __ANDROID__ // Layoutlib does not support Layers
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support Layers
+     if (layerUpdater != nullptr) {
+         // Create a ref-counted drawable, which is kept alive by sk_sp in SkLiteDL.
+         sk_sp<SkDrawable> drawable(new LayerDrawable(layerUpdater));
+@@ -193,7 +193,7 @@ void SkiaRecordingCanvas::drawRenderNode(uirenderer::RenderNode* renderNode) {
+ }
+ 
+ void SkiaRecordingCanvas::drawWebViewFunctor(int functor) {
+-#ifdef __ANDROID__ // Layoutlib does not support GL, Vulcan etc.
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support GL, Vulcan etc.
+     FunctorDrawable* functorDrawable;
+     if (Properties::getRenderPipelineType() == RenderPipelineType::SkiaVulkan) {
+         functorDrawable = mDisplayList->allocateDrawable<VkFunctorDrawable>(functor, asSkCanvas());
+diff --git a/frameworks/base/libs/hwui/renderthread/CacheManager.h b/frameworks/base/libs/hwui/renderthread/CacheManager.h
+index 94f100516..9b92abbd0 100644
+--- a/frameworks/base/libs/hwui/renderthread/CacheManager.h
++++ b/frameworks/base/libs/hwui/renderthread/CacheManager.h
+@@ -17,7 +17,7 @@
+ #ifndef CACHEMANAGER_H
+ #define CACHEMANAGER_H
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+ #include <include/gpu/ganesh/GrDirectContext.h>
+ #endif
+ #include <SkSurface.h>
+@@ -44,7 +44,7 @@ class CanvasContext;
+ 
+ class CacheManager {
+ public:
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+     void configureContext(GrContextOptions* context, const void* identity, ssize_t size);
+ #endif
+     void trimMemory(TrimLevel mode);
+@@ -75,14 +75,14 @@ private:
+     void scheduleDestroyContext();
+     void cancelDestroyContext();
+ 
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+     void reset(sk_sp<GrDirectContext> grContext);
+ #endif
+     void destroy();
+ 
+     RenderThread& mRenderThread;
+     const MemoryPolicy& mMemoryPolicy;
+-#ifdef __ANDROID__ // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST) // Layoutlib does not support hardware acceleration
+     sk_sp<GrDirectContext> mGrContext;
+ #endif
+ 
+diff --git a/frameworks/base/libs/hwui/renderthread/CanvasContext.cpp b/frameworks/base/libs/hwui/renderthread/CanvasContext.cpp
+index 4f4223833..af3c08443 100644
+--- a/frameworks/base/libs/hwui/renderthread/CanvasContext.cpp
++++ b/frameworks/base/libs/hwui/renderthread/CanvasContext.cpp
+@@ -22,7 +22,7 @@
+ 
+ #include "system/window.h"
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <gui/ITransactionCompletedListener.h>
+ #include <gui/SurfaceComposerClient.h>
+ #endif
+@@ -48,7 +48,7 @@
+ #include "hwui/Canvas.h"
+ #include "pipeline/skia/SkiaCpuPipeline.h"
+ #include "pipeline/skia/SkiaGpuPipeline.h"
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include "pipeline/skia/SkiaIpcPipeline.h"
+ #endif
+ #include "pipeline/skia/SkiaOpenGLPipeline.h"
+@@ -90,7 +90,7 @@ CanvasContext* CanvasContext::create(RenderThread& thread, bool translucent,
+                                      pid_t uiThreadId, pid_t renderThreadId, bool useIpcCanvas) {
+     auto renderType = Properties::getRenderPipelineType();
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     if (useIpcCanvas) {
+         return new CanvasContext(thread, translucent, rootRenderNode, contextFactory,
+                                  std::make_unique<skiapipeline::SkiaIpcPipeline>(thread),
+@@ -107,7 +107,7 @@ CanvasContext* CanvasContext::create(RenderThread& thread, bool translucent,
+             return new CanvasContext(thread, translucent, rootRenderNode, contextFactory,
+                                      std::make_unique<skiapipeline::SkiaVulkanPipeline>(thread),
+                                      uiThreadId, renderThreadId);
+-#ifndef __ANDROID__
++#if !defined(__ANDROID__) || defined(LAYOUTLIB_HOST)
+         case RenderPipelineType::SkiaCpu:
+             return new CanvasContext(thread, translucent, rootRenderNode, contextFactory,
+                                      std::make_unique<skiapipeline::SkiaCpuPipeline>(thread),
+@@ -188,7 +188,7 @@ void CanvasContext::destroy() {
+     stopDrawing();
+     setHardwareBuffer(nullptr);
+     setSurface(nullptr);
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     setSurfaceControl(nullptr);
+     setBLASTBufferQueue(nullptr);
+ #endif
+@@ -215,7 +215,7 @@ static void setBufferCount(ANativeWindow* window) {
+ }
+ 
+ void CanvasContext::setHardwareBuffer(AHardwareBuffer* buffer) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     if (mHardwareBuffer) {
+         AHardwareBuffer_release(mHardwareBuffer);
+         mHardwareBuffer = nullptr;
+@@ -246,14 +246,14 @@ void CanvasContext::setSurface(ANativeWindow* window, bool enableTimeout) {
+     setupPipelineSurface();
+ }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ sp<SurfaceControl> CanvasContext::getSurfaceControl() const {
+     return mSurfaceControl;
+ }
+ #endif
+ 
+ void CanvasContext::setSurfaceControl(sp<SurfaceControl> surfaceControl) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     startHintSession();
+ 
+     if (surfaceControl == mSurfaceControl) return;
+@@ -286,12 +286,12 @@ void CanvasContext::setSurfaceControl(sp<SurfaceControl> surfaceControl) {
+ }
+ 
+ void CanvasContext::setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     mRenderPipeline->setBLASTBufferQueue(bbq);
+ #endif
+ }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ void CanvasContext::setCornerRadiiCallback(
+         std::function<void(const gui::CornerRadii&)> cornerRadiiCallback) {
+     mRenderPipeline->setCornerRadiiCallback(std::move(cornerRadiiCallback));
+@@ -670,7 +670,7 @@ Frame CanvasContext::getFrame() {
+ }
+ 
+ void CanvasContext::draw(bool solelyTextureViewUpdates) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     if (auto grContext = getGrContext()) {
+         if (grContext->abandoned()) {
+             if (grContext->isDeviceLost()) {
+@@ -705,7 +705,7 @@ void CanvasContext::draw(bool solelyTextureViewUpdates) {
+     if (skippedFrameReason) {
+         mCurrentFrameInfo->setSkippedFrameReason(*skippedFrameReason);
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         if (auto grContext = getGrContext()) {
+             // Submit to ensure that any texture uploads complete and Skia can
+             // free its staging buffers.
+@@ -1030,7 +1030,7 @@ static int64_t calculateExpectedDuration(const int64_t current, const int64_t pr
+ 
+ void CanvasContext::onSurfaceStatsAvailable(void* context, int32_t surfaceControlId,
+                                             const SurfaceStats& stats) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     auto* instance = static_cast<CanvasContext*>(context);
+ 
+     nsecs_t gpuCompleteTime = -1L;
+diff --git a/frameworks/base/libs/hwui/renderthread/CanvasContext.h b/frameworks/base/libs/hwui/renderthread/CanvasContext.h
+index 126fb3693..b9a2c564e 100644
+--- a/frameworks/base/libs/hwui/renderthread/CanvasContext.h
++++ b/frameworks/base/libs/hwui/renderthread/CanvasContext.h
+@@ -50,7 +50,7 @@
+ #include "utils/ForceDark.h"
+ #include "utils/RingBuffer.h"
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <gui/SurfaceComposerClient.h>
+ #endif
+ 
+@@ -130,7 +130,7 @@ public:
+      */
+     GrDirectContext* getGrContext() const { return mRenderThread.getGrContext(); }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     sp<SurfaceControl> getSurfaceControl() const;
+ #endif
+     int32_t getSurfaceControlGenerationId() const { return mSurfaceControlGenerationId; }
+@@ -144,7 +144,7 @@ public:
+ 
+     void setBLASTBufferQueue(const sp<BLASTBufferQueue>& surfaceControl);
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     void setCornerRadiiCallback(std::function<void(const gui::CornerRadii&)> cornerRadiiCallback);
+     void setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback);
+     bool syncNextTransaction(std::function<void(SurfaceComposerClient::Transaction*)>, bool);
+@@ -160,7 +160,7 @@ public:
+     bool isStopped() { return mStopped || !hasOutputTarget(); }
+     bool hasOutputTarget() const {
+         if (mNativeSurface.get() || mHardwareBuffer) return true;
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         if (mSurfaceControl != nullptr) {
+             return true;
+         }
+@@ -330,7 +330,7 @@ private:
+     std::unique_ptr<ReliableSurface> mNativeSurface;
+     // The SurfaceControl reference is passed from ViewRootImpl, can be set to
+     // NULL to remove the reference
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     sp<SurfaceControl> mSurfaceControl = nullptr;
+ #endif
+     // id to track surface control changes and WebViewFunctor uses it to determine
+diff --git a/frameworks/base/libs/hwui/renderthread/DrawFrameTask.cpp b/frameworks/base/libs/hwui/renderthread/DrawFrameTask.cpp
+index 826d00e1f..dd04c3c44 100644
+--- a/frameworks/base/libs/hwui/renderthread/DrawFrameTask.cpp
++++ b/frameworks/base/libs/hwui/renderthread/DrawFrameTask.cpp
+@@ -140,7 +140,7 @@ void DrawFrameTask::run() {
+     if (CC_LIKELY(canDrawThisFrame)) {
+         context->draw(solelyTextureViewUpdates);
+     } else {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+         // Do a flush in case syncFrameState performed any texture uploads. Since we skipped
+         // the draw() call, those uploads (or deletes) will end up sitting in the queue.
+         // Do them now
+@@ -178,7 +178,7 @@ bool DrawFrameTask::syncFrameState(TreeInfo& info) {
+     bool canDraw = mContext->makeCurrent();
+     mContext->unpinImages();
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     for (size_t i = 0; i < mLayers.size(); i++) {
+         if (mLayers[i]) {
+             mLayers[i]->apply();
+diff --git a/frameworks/base/libs/hwui/renderthread/DrawFrameTask.h b/frameworks/base/libs/hwui/renderthread/DrawFrameTask.h
+index 4130d4abe..1b3adb191 100644
+--- a/frameworks/base/libs/hwui/renderthread/DrawFrameTask.h
++++ b/frameworks/base/libs/hwui/renderthread/DrawFrameTask.h
+@@ -30,7 +30,7 @@
+ #include "SkColorSpace.h"
+ #include "SwapBehavior.h"
+ #include "utils/TimeUtils.h"
+-#ifdef __ANDROID__  // Layoutlib does not support hardware acceleration
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)  // Layoutlib does not support hardware acceleration
+ #include <android/hardware_buffer.h>
+ #endif
+ #include "HardwareBufferRenderParams.h"
+diff --git a/frameworks/base/libs/hwui/renderthread/IRenderPipeline.h b/frameworks/base/libs/hwui/renderthread/IRenderPipeline.h
+index 012dae474..479293e8b 100644
+--- a/frameworks/base/libs/hwui/renderthread/IRenderPipeline.h
++++ b/frameworks/base/libs/hwui/renderthread/IRenderPipeline.h
+@@ -19,7 +19,7 @@
+ #include <SkColorSpace.h>
+ #include <SkRect.h>
+ #include <android-base/unique_fd.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <gui/BLASTBufferQueue.h>
+ #include <gui/SurfaceControl.h>
+ #endif
+@@ -82,7 +82,7 @@ public:
+     virtual void setHardwareBuffer(AHardwareBuffer* hardwareBuffer) = 0;
+     virtual bool hasHardwareBuffer() = 0;
+     virtual bool setSurface(ANativeWindow* window, SwapBehavior swapBehavior) = 0;
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     virtual void setSurfaceControl(const sp<SurfaceControl>&) {}
+     virtual void setBLASTBufferQueue(const sp<BLASTBufferQueue>&) {}
+     virtual void setCornerRadiiCallback(std::function<void(const gui::CornerRadii&)>) {}
+diff --git a/frameworks/base/libs/hwui/renderthread/ReliableSurface.h b/frameworks/base/libs/hwui/renderthread/ReliableSurface.h
+index d6a4d50d3..803ea2f82 100644
+--- a/frameworks/base/libs/hwui/renderthread/ReliableSurface.h
++++ b/frameworks/base/libs/hwui/renderthread/ReliableSurface.h
+@@ -21,7 +21,7 @@
+ #include <apex/window.h>
+ #include <utils/Errors.h>
+ #include <utils/Macros.h>
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <utils/NdkUtils.h>
+ #endif
+ #include <utils/StrongPointer.h>
+@@ -64,7 +64,7 @@ private:
+     mutable std::mutex mMutex;
+ 
+     uint64_t mUsage = AHARDWAREBUFFER_USAGE_GPU_FRAMEBUFFER;
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     AHardwareBuffer_Format mFormat = AHARDWAREBUFFER_FORMAT_R8G8B8A8_UNORM;
+     UniqueAHardwareBuffer mScratchBuffer;
+     ANativeWindowBuffer* mReservedBuffer = nullptr;
+diff --git a/frameworks/base/libs/hwui/renderthread/RenderProxy.cpp b/frameworks/base/libs/hwui/renderthread/RenderProxy.cpp
+index 31fee5011..11d46f5e2 100644
+--- a/frameworks/base/libs/hwui/renderthread/RenderProxy.cpp
++++ b/frameworks/base/libs/hwui/renderthread/RenderProxy.cpp
+@@ -23,7 +23,7 @@
+ #include <pthread.h>
+ #include "utils/Thread.h"
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <gui/BLASTBufferQueue.h>
+ #include <gui/SurfaceControl.h>
+ #endif
+@@ -49,7 +49,7 @@ namespace renderthread {
+ RenderProxy::RenderProxy(bool translucent, RenderNode* rootRenderNode,
+                          IContextFactory* contextFactory, bool useIpcCanvas)
+         : mRenderThread(RenderThread::getInstance()), mContext(nullptr) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     pid_t uiThreadId = pthread_gettid_np(pthread_self());
+ #else
+     pid_t uiThreadId = 0;
+@@ -102,7 +102,7 @@ void RenderProxy::setName(const char* name) {
+ }
+ 
+ void RenderProxy::setHardwareBuffer(AHardwareBuffer* buffer) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     if (buffer) {
+         AHardwareBuffer_acquire(buffer);
+     }
+@@ -124,7 +124,7 @@ void RenderProxy::setSurface(ANativeWindow* window, bool enableTimeout) {
+ }
+ 
+ void RenderProxy::setSurfaceControl(sp<SurfaceControl> surfaceControl) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     mRenderThread.queue().post([this, control = std::move(surfaceControl)]() mutable {
+         mContext->setSurfaceControl(std::move(control));
+     });
+@@ -136,12 +136,12 @@ void RenderProxy::setSurfaceControl(sp<SurfaceControl> surfaceControl) {
+  * setBLASTBufferQueue also does.
+  */
+ void RenderProxy::setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     mContext->setBLASTBufferQueue(std::move(bbq));
+ #endif
+ }
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ void RenderProxy::setCornerRadiiCallback(
+         std::function<void(const gui::CornerRadii&)> cornerRadiiCallback) {
+     mContext->setCornerRadiiCallback(std::move(cornerRadiiCallback));
+@@ -278,7 +278,7 @@ void RenderProxy::cancelLayerUpdate(DeferredLayerUpdater* layer) {
+ }
+ 
+ void RenderProxy::detachSurfaceTexture(DeferredLayerUpdater* layer) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     return mRenderThread.queue().runSync([&]() { layer->detachSurfaceTexture(); });
+ #endif
+ }
+@@ -392,7 +392,7 @@ void RenderProxy::dumpGraphicsMemory(int fd, bool includeProfileData, bool reset
+             }
+         });
+     }
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     if (!Properties::isolatedProcess) {
+         std::string grallocInfo;
+         GraphicBufferAllocator::getInstance().dump(grallocInfo);
+@@ -422,7 +422,7 @@ void RenderProxy::rotateProcessStatsBuffer() {
+ }
+ 
+ int RenderProxy::getRenderThreadTid() {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     return mRenderThread.getTid();
+ #else
+     return 0;
+@@ -568,7 +568,7 @@ int RenderProxy::preload() {
+     // Create RenderThread object and start the thread. Then preload Vulkan/EGL driver.
+     auto& thread = RenderThread::getInstance();
+     thread.queue().post([&thread]() { thread.preload(); });
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     return thread.getTid();
+ #else
+     return 0;
+diff --git a/frameworks/base/libs/hwui/renderthread/RenderProxy.h b/frameworks/base/libs/hwui/renderthread/RenderProxy.h
+index f8c2e9fbd..30d0d64a1 100644
+--- a/frameworks/base/libs/hwui/renderthread/RenderProxy.h
++++ b/frameworks/base/libs/hwui/renderthread/RenderProxy.h
+@@ -32,7 +32,7 @@
+ #include "hwui/Bitmap.h"
+ #include "utils/ForceDark.h"
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <gui/SurfaceComposerClient.h>
+ #endif
+ 
+@@ -88,7 +88,7 @@ public:
+     void setSurface(ANativeWindow* window, bool enableTimeout = true);
+     void setSurfaceControl(sp<SurfaceControl> surfaceControl);
+     void setBLASTBufferQueue(const sp<BLASTBufferQueue>& bbq);
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     void setCornerRadiiCallback(std::function<void(const gui::CornerRadii&)> cornerRadiiCallback);
+     void setWaitForBufferReleaseCallback(std::function<void(int64_t)> callback);
+ 
+diff --git a/frameworks/base/libs/hwui/utils/StatsUtils.cpp b/frameworks/base/libs/hwui/utils/StatsUtils.cpp
+index 4fd8281fa..953d7ca32 100644
+--- a/frameworks/base/libs/hwui/utils/StatsUtils.cpp
++++ b/frameworks/base/libs/hwui/utils/StatsUtils.cpp
+@@ -14,7 +14,7 @@
+  * limitations under the License.
+  */
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <cutils/properties.h>
+ #include <dlfcn.h>
+ #include <log/log.h>
+@@ -32,7 +32,7 @@
+ namespace android {
+ namespace uirenderer {
+ 
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ 
+ namespace {
+ 
+@@ -71,7 +71,7 @@ int32_t toStatsBitmapFormat(SkColorType type) {
+ #endif
+ 
+ void logBitmapDecode(const SkImageInfo& info, bool hasGainmap) {
+-#ifdef __ANDROID__
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ 
+     if (!statssocket::lazy::IsAvailable()) {
+         return;
+diff --git a/frameworks/native/libs/binder/IServiceManager.cpp b/frameworks/native/libs/binder/IServiceManager.cpp
+index 0a564aa..a1cd59c 100644
+--- a/frameworks/native/libs/binder/IServiceManager.cpp
++++ b/frameworks/native/libs/binder/IServiceManager.cpp
+@@ -53,7 +53,7 @@
+ #include "ServiceManagerHost.h"
+ #endif
+ 
+-#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__) && !defined(__ANDROID_NATIVE_BRIDGE__)
++#if defined(__ANDROID__) && !defined(__ANDROID_RECOVERY__) && !defined(__ANDROID_NATIVE_BRIDGE__) && !defined(LAYOUTLIB_HOST)
+ #include <android/apexsupport.h>
+ #include <vndksupport/linker.h>
+ #endif
+@@ -555,7 +555,7 @@ bool checkPermission(const String16& permission, pid_t pid, uid_t uid, bool logP
+ 
+ void* openDeclaredPassthroughHal(const String16& interface, const String16& instance, int flag) {
+ #if defined(__ANDROID__) && !defined(__ANDROID_VENDOR__) && !defined(__ANDROID_RECOVERY__) && \
+-        !defined(__ANDROID_NATIVE_BRIDGE__)
++        !defined(__ANDROID_NATIVE_BRIDGE__) && !defined(LAYOUTLIB_HOST)
+     sp<IServiceManager> sm = defaultServiceManager();
+     String16 name = interface + String16("/") + instance;
+     if (!sm->isDeclared(name)) {
+diff --git a/frameworks/native/libs/binder/ProcessState.cpp b/frameworks/native/libs/binder/ProcessState.cpp
+index dd4444b..9ab20f5 100644
+--- a/frameworks/native/libs/binder/ProcessState.cpp
++++ b/frameworks/native/libs/binder/ProcessState.cpp
+@@ -49,7 +49,7 @@
+ #define DEFAULT_MAX_BINDER_THREADS 15
+ #define DEFAULT_ENABLE_ONEWAY_SPAM_DETECTION 1
+ 
+-#if defined(__ANDROID__) || defined(__Fuchsia__)
++#if (defined(__ANDROID__) || defined(__Fuchsia__)) && !defined(LAYOUTLIB_HOST)
+ #define EXPECT_BINDER_OPEN_SUCCESS
+ #endif
+ 
+diff --git a/frameworks/native/libs/binder/Utils.h b/frameworks/native/libs/binder/Utils.h
+index 1421102..aa0ee1f 100644
+--- a/frameworks/native/libs/binder/Utils.h
++++ b/frameworks/native/libs/binder/Utils.h
+@@ -86,7 +86,7 @@ constexpr size_t countof(T (&)[N]) {
+ 
+ // avoid optimizations
+ inline void zeroMemory(uint8_t* data, size_t size) {
+-#ifdef __BIONIC__
++#if defined(__BIONIC__) && __ANDROID_API__ >= 35
+     memset_explicit(data, 0, size);
+ #else
+     // Assembly marking to prevent any optimizing compiler from not actually clearing the buffer,
+diff --git a/frameworks/native/libs/binder/ndk/stability.cpp b/frameworks/native/libs/binder/ndk/stability.cpp
+index a9b18ee..5f7d382 100644
+--- a/frameworks/native/libs/binder/ndk/stability.cpp
++++ b/frameworks/native/libs/binder/ndk/stability.cpp
+@@ -31,7 +31,7 @@ using ::android::internal::Stability;
+ #error libbinder_ndk should only be built in a system context
+ #endif
+ 
+-#ifdef __ANDROID_NDK__
++#if defined(__ANDROID_NDK__) && !defined(LAYOUTLIB_HOST)
+ #error libbinder_ndk should only be built in a system context
+ #endif
+ 
+diff --git a/frameworks/native/libs/input/KeyLayoutMap.cpp b/frameworks/native/libs/input/KeyLayoutMap.cpp
+index 46bf5fc..e48c6c7 100644
+--- a/frameworks/native/libs/input/KeyLayoutMap.cpp
++++ b/frameworks/native/libs/input/KeyLayoutMap.cpp
+@@ -26,7 +26,7 @@
+ #include <utils/Errors.h>
+ #include <utils/Timers.h>
+ #include <utils/Tokenizer.h>
+-#if defined(__ANDROID__)
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ #include <vintf/KernelConfigs.h>
+ #endif
+ 
+@@ -96,7 +96,7 @@ static const std::unordered_map<std::string_view, InputDeviceSensorType> SENSOR_
+          sensorPair<InputDeviceSensorType::SIGNIFICANT_MOTION>()};
+ 
+ bool kernelConfigsArePresent(const std::set<std::string>& configs) {
+-#if defined(__ANDROID__)
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     if (configs.empty()) {
+         return true;
+     }
+diff --git a/frameworks/native/libs/input/TfLiteMotionPredictor.cpp b/frameworks/native/libs/input/TfLiteMotionPredictor.cpp
+index cb6dabf..f52226e 100644
+--- a/frameworks/native/libs/input/TfLiteMotionPredictor.cpp
++++ b/frameworks/native/libs/input/TfLiteMotionPredictor.cpp
+@@ -66,7 +66,7 @@ constexpr char OUTPUT_PRESSURE[] = "pressure";
+ 
+ // Ideally, we would just use std::filesystem::exists here, but it requires libc++fs, which causes
+ // build issues in other parts of the system.
+-#if defined(__ANDROID__)
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+ bool fileExists(const char* filename) {
+     struct stat buffer;
+     return stat(filename, &buffer) == 0;
+@@ -74,7 +74,7 @@ bool fileExists(const char* filename) {
+ #endif
+ 
+ std::string getModelPath() {
+-#if defined(__ANDROID__)
++#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+     static const char* oemModel = "/vendor/etc/motion_predictor_model.tflite";
+     if (fileExists(oemModel)) {
+         return oemModel;

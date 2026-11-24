@@ -75,6 +75,7 @@ class RustBuilder:
             SRC / "frameworks" / "minikin" / "rust" / "Android.bp",
             SRC / "frameworks" / "native" / "libs" / "input" / "rust" / "Android.bp",
             SRC / "frameworks" / "native" / "libs" / "input" / "Android.bp",
+            SRC / "frameworks" / "native" / "libs" / "binder" / "rust" / "Android.bp",
             SRC / "external" / "skia" / "Android.bp",
         ]
         for bp in bp_paths:
@@ -243,15 +244,30 @@ class RustBuilder:
                 "cargo_pkg_version": "0.1.0",
                 "mod_dir": rs.parent,
             }
+        if name == "libbinder_ndk_compat_bindgen":
+            rs = GEN / "bindgen" / "libbinder_ndk_compat_bindgen" / "bindings.rs"
+            return {
+                "crate_name": "binder_ndk_compat_bindgen",
+                "crate_root": rs,
+                "edition": "2021",
+                "rustlibs": ["libbinder_ndk_sys"],
+                "proc_macros": [],
+                "features": [],
+                "cfgs": [],
+                "flags": [],
+                "aliases": [],
+                "cargo_pkg_version": "0.1.0",
+                "mod_dir": rs.parent,
+            }
         if name == "inputconstants-rust":
             rs = self._ensure_inputconstants_rust_root()
             return {
-                "crate_name": "inputconstants_rust",
+                "crate_name": "inputconstants",
                 "crate_root": rs,
                 "edition": "2021",
-                "rustlibs": [],
-                "proc_macros": [],
-                "features": [],
+                "rustlibs": ["libbinder_rs", "libzerocopy"],
+                "proc_macros": ["libasync_trait"],
+                "features": ["std"],
                 "cfgs": [],
                 "flags": [],
                 "aliases": [],
@@ -263,14 +279,19 @@ class RustBuilder:
     def _ensure_inputconstants_rust_root(self) -> Path:
         base = GEN / "aidl" / "inputconstants-rust"
         lib_rs = base / "lib.rs"
-        if not lib_rs.exists():
-            # Expose android::os::{IInputConstants, InputConfig, ...}
-            os_dir = base / "android" / "os"
-            mods = sorted(p.stem for p in os_dir.glob("*.rs") if p.stem != "mod")
-            os_mod = os_dir / "mod.rs"
-            os_mod.write_text("\n".join(f"pub mod {m};" for m in mods) + "\n", encoding="utf-8")
-            (base / "android" / "mod.rs").write_text("pub mod os;\n", encoding="utf-8")
-            lib_rs.write_text("#![allow(warnings)]\npub mod android;\n", encoding="utf-8")
+        os_dir = base / "android" / "os"
+        mods = sorted(p.stem for p in os_dir.glob("*.rs") if p.stem != "mod")
+        os_mod = os_dir / "mod.rs"
+        os_mod.write_text("\n".join(f"pub mod {m};" for m in mods) + "\n", encoding="utf-8")
+        (base / "android" / "mod.rs").write_text("pub mod os;\n", encoding="utf-8")
+        desired = '#![allow(warnings)]\nextern crate alloc;\npub mod aidl {\n    #[path = "../android/mod.rs"]\n    pub mod android;\n}\n'
+        # Put mod.rs inside aidl/ for canonical path resolution
+        aidl_dir = base / "aidl"
+        aidl_dir.mkdir(parents=True, exist_ok=True)
+        (aidl_dir / "mod.rs").write_text('#[path = "../android/mod.rs"]\npub mod android;\n', encoding="utf-8")
+        root_txt = "#![allow(warnings)]\nextern crate alloc;\npub mod aidl;\n"
+        if not lib_rs.exists() or lib_rs.read_text(encoding="utf-8") != root_txt:
+            lib_rs.write_text(root_txt, encoding="utf-8")
         return lib_rs
 
     def build_module(self, name: str, is_host: bool) -> Path:
@@ -433,6 +454,8 @@ class RustBuilder:
             env["OUT_DIR"] = str(out_subdir)
         elif name == "libaconfig_storage_file":
             env["OUT_DIR"] = str(GEN / "rust_protos")
+        elif name == "libbinder_ndk_sys":
+            env["OUT_DIR"] = str(GEN / "bindgen" / "libbinder_ndk_bindgen")
 
         res = subprocess.run(cmd, env=env, capture_output=True, text=True)
         if res.returncode != 0:
