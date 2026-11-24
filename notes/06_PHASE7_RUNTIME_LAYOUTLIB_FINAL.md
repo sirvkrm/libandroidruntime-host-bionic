@@ -2,7 +2,7 @@
 
 **Date**: 2026-11-24
 **Target**: `aarch64-linux-android30` (`arm64-v8a`, Android NDK r28 `28.2.13676358`, Clang `19.0.1`, `c++_static`, `rustc 1.99.1`)
-**Build Definitions & Patches**: `cmake/runtime.cmake`, `cmake/frameworks_ui.cmake`, `tools/build_rust.py`, `patches/04_host_bionic_core_jni.patch`
+**Build Definitions & Patches**: `cmake/runtime.cmake`, `cmake/frameworks_ui.cmake`, `tools/build_rust.py`, `tools/termux/`, `patches/03_host_bionic_frameworks_ui.patch`, `patches/04_host_bionic_core_jni.patch`, `patches/05_host_bionic_libbase_properties.patch`
 
 ---
 
@@ -35,6 +35,11 @@ Compiled and linked the final top-level Android Studio Layoutlib shared librarie
    - `src/system/libbase/properties.cpp` previously gated its in-memory `HostProperties` map behind `#if !defined(__BIONIC__)`. Because Termux defines `__BIONIC__`, `Bridge.setSystemProperties()` -> `__system_property_set("ro.icu.data.path", ...)` would otherwise fail talking to Android `init`'s `/dev/socket/property_service` (`EACCES`).
    - Enabled `HostProperties` under `#if !defined(__BIONIC__) || defined(LAYOUTLIB_HOST)` with strong C linkage definitions for all `__system_property_*` accessors (`_set`, `_get`, `_find`, `_read`, `_read_callback`, `_area_serial`, `_serial`, `_wait`, `_foreach`), eliminating all `libc.so` `__system_property_*` imports from both `.so` binaries.
 
+6. **Cross-Version Layoutlib Compatibility & Termux Test Tooling (`tools/termux/`)**
+   - Guarded Android 17's `android/content/res/XmlBlock$FlagInfo` lookup inside `android_util_XmlBlock.cpp` (`LAYOUTLIB_HOST`) and updated `HostRuntime.cpp` / `hwui/apex/LayoutlibLoader.cpp` `register_jni_procs` to warn and skip unmapped legacy JNI class entries (such as `android.os.Trace`) rather than aborting subsequent `register_android_graphics_classes()`.
+   - Saved Termux installer and CLI test harness sources (`install.sh`, `layoutlib_native_probe.cpp`, `smoke_java/`, `RenderXmlTest.java`, `test_layout.xml`) under `tools/termux/`.
+   - Verified on real Termux device (`layoutlib-test smoke`): `dlopen(..., RTLD_NOW)` resolved `libandroid_runtime.so` via `$ORIGIN`, `JNI_OnLoad` initialized in Termux OpenJDK, `HostProperties` `ro.*` set/get succeeded, and `android.util.Log` JNI succeeded.
+
 ---
 
 ## ELF, Dynamic & API 30 Verification Results
@@ -45,12 +50,12 @@ Verified with NDK r28 `llvm-readelf` and `llvm-nm` against `sysroot/usr/lib/aarc
   - `ELF64` / `AArch64` / `DYN (Shared object file)` / `SONAME: libandroid_runtime.so`
   - `DT_NEEDED`: ONLY `[libm.so]`, `[libdl.so]`, `[libc.so]`
   - Defined dynamic exports: `229` (`JNI_OnLoad`, 17 `ANativeWindow_*`, `AndroidRuntime*`, `VectorImpl`, `BufferQueue`, `KeyCharacterMap`, `InputDeviceInfo`, `android_view_InputDevice_create`, `android_view_Surface_createFromIGraphicBufferProducer`, `android::base::*`, etc.)
-  - Undefined dynamic symbols: `321` total, **`0` missing strong symbols** at Android API 30 (`6` guarded weak symbols: `AFileDescriptor_{create,getFd,setFd}`, `android::CallStack::*`)
+  - Undefined dynamic symbols: `313` total, **`0` missing strong symbols** at Android API 30 (`6` guarded weak symbols: `AFileDescriptor_{create,getFd,setFd}`, `android::CallStack::*`)
   - Stripped size (`--strip-unneeded`): **`20M`** (`335M` unstripped)
 
 - **`layoutlib_jni.so`**:
   - `ELF64` / `AArch64` / `DYN (Shared object file)` / `SONAME: layoutlib_jni.so` / `DT_RUNPATH: [$ORIGIN]`
   - `DT_NEEDED`: ONLY `[libandroid_runtime.so]`, `[libdl.so]`, `[libm.so]`, `[libc.so]`
   - Defined dynamic exports: `2` (`JNI_OnLoad`, `JNI_OnUnload`)
-  - Undefined dynamic symbols: `91` total, **`0` missing strong symbols** against API 30 + `libandroid_runtime.so` (`0` weak)
+  - Undefined dynamic symbols: `90` total, **`0` missing strong symbols** against API 30 + `libandroid_runtime.so` (`0` weak)
   - Stripped size (`--strip-unneeded`): **`427K`** (`5.6M` unstripped)

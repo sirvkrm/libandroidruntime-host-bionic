@@ -1,16 +1,3 @@
-diff --git a/logging.cpp b/logging.cpp
-index 9204c0c..13019be 100644
---- a/logging.cpp
-+++ b/logging.cpp
-@@ -193,7 +193,7 @@ static int32_t LogSeverityToPriority(LogSeverity severity) {
- }
- 
- static LogFunction& Logger() {
--#ifdef __ANDROID__
-+#if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
-   static auto& logger = *new LogFunction(LogdLogger());
- #else
-   static auto& logger = *new LogFunction(StderrLogger);
 diff --git a/properties.cpp b/properties.cpp
 index dd798b3..c3f2b25 100644
 --- a/properties.cpp
