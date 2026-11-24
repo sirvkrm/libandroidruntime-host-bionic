@@ -189,6 +189,50 @@ index 5a8390674..7addf4405 100644
      tracing_perfetto::traceEnd(ATRACE_TAG_VIEW); // CacheUnicodeExtensionSubtagsKeyMap
  #endif
  }
+diff --git a/core/jni/android_util_XmlBlock.cpp b/core/jni/android_util_XmlBlock.cpp
+index 752e41d72..ab36ab928 100644
+--- a/core/jni/android_util_XmlBlock.cpp
++++ b/core/jni/android_util_XmlBlock.cpp
+@@ -342,6 +342,9 @@ static void android_content_XmlBlock_nativeDestroy(JNIEnv* env, jobject clazz,
+ }
+ 
+ static jobject android_content_XmlBlock_nativeGetFlagInfo(JNIEnv* env, jobject clazz, jlong token) {
++    if (gFlagInfo.jClass == nullptr) {
++        return nullptr;
++    }
+     ResXMLParser* st = reinterpret_cast<ResXMLParser*>(token);
+     if (st == nullptr) {
+         return nullptr;
+@@ -403,12 +406,29 @@ static const JNINativeMethod gXmlBlockMethods[] = {
+ 
+ int register_android_content_XmlBlock(JNIEnv* env)
+ {
++#if defined(LAYOUTLIB_HOST)
++    // Layoutlib hosted in Android Studio may bundle an earlier framework layoutlib.jar
++    // before Android 17 introduced XmlBlock$FlagInfo.
++    jclass flagCls = env->FindClass("android/content/res/XmlBlock$FlagInfo");
++    if (flagCls != nullptr) {
++        gFlagInfo.jClass = MakeGlobalRefOrDie(env, flagCls);
++        gFlagInfo.jConstructor = GetMethodIDOrDie(env, gFlagInfo.jClass, "<init>", "(IZ)V");
++        return RegisterMethodsOrDie(env, "android/content/res/XmlBlock",
++                                    gXmlBlockMethods, NELEM(gXmlBlockMethods));
++    }
++    env->ExceptionClear();
++    gFlagInfo.jClass = nullptr;
++    gFlagInfo.jConstructor = nullptr;
++    return RegisterMethodsOrDie(env, "android/content/res/XmlBlock",
++                                gXmlBlockMethods, NELEM(gXmlBlockMethods) - 1);
++#else
+     gFlagInfo.jClass =
+             MakeGlobalRefOrDie(env, FindClassOrDie(env, "android/content/res/XmlBlock$FlagInfo"));
+     gFlagInfo.jConstructor = GetMethodIDOrDie(env, gFlagInfo.jClass, "<init>", "(IZ)V");
+ 
+     return RegisterMethodsOrDie(env,
+             "android/content/res/XmlBlock", gXmlBlockMethods, NELEM(gXmlBlockMethods));
++#endif
+ }
+ 
+ }; // namespace android
 diff --git a/core/jni/android_view_Surface.cpp b/core/jni/android_view_Surface.cpp
 index ac7d786eb..75e48e807 100644
 --- a/core/jni/android_view_Surface.cpp
