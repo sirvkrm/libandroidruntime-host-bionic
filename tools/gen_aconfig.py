@@ -330,10 +330,14 @@ def main() -> None:
         generate_cpp(pkg, container, flags, rel_vals, mode, gen_root / name)
         print(f"  {name}: pkg={pkg}, {len(flags)} flags, mode={mode}")
 
-    # Rust aconfig lib: libinput_flags_rust
+    # Rust aconfig lib: libinput_flags_rust & libandroid_text_flags_rust
     pkg, container, flags = parse_aconfig_files([SRC / "frameworks/native/libs/input/input_flags.aconfig"])
     generate_rust(pkg, flags, rel_vals, gen_root / "libinput_flags_rust/src/lib.rs")
     print(f"  libinput_flags_rust: pkg={pkg}, {len(flags)} flags")
+
+    pkg, container, flags = parse_aconfig_files(sorted((SRC / "frameworks/base/core/java/android/text/flags").glob("*.aconfig")))
+    generate_rust(pkg, flags, rel_vals, gen_root / "libandroid_text_flags_rust/src/lib.rs")
+    print(f"  libandroid_text_flags_rust: pkg={pkg}, {len(flags)} flags")
 
 
 if __name__ == "__main__":

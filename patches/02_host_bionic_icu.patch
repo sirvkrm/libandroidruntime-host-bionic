@@ -1,0 +1,13 @@
+diff --git a/external/icu/libandroidicuinit/android_icu_init.cpp b/external/icu/libandroidicuinit/android_icu_init.cpp
+index 308f583..0d6b567 100644
+--- a/external/icu/libandroidicuinit/android_icu_init.cpp
++++ b/external/icu/libandroidicuinit/android_icu_init.cpp
+@@ -23,7 +23,7 @@ void android_icu_init() {
+     bool runAndroidInit = false;
+ 
+     // We know that the environment variables are exported early in init.environ.rc on Android.
+-    #ifdef __ANDROID__
++    #if defined(__ANDROID__) && !defined(LAYOUTLIB_HOST)
+       #ifdef ANDROID_ICU_NO_DAT
+         // If we're intentionally building ICU on Android without the .dat file, no
+         // need to run init.
