@@ -1,0 +1,25 @@
+# CMake Toolchain wrapper for Android NDK r28 targeting Termux Bionic (aarch64, API 30+)
+
+if(NOT DEFINED ANDROID_NDK OR "${ANDROID_NDK}" STREQUAL "")
+    if(DEFINED ENV{ANDROID_NDK_HOME} AND NOT "$ENV{ANDROID_NDK_HOME}" STREQUAL "")
+        set(ANDROID_NDK "$ENV{ANDROID_NDK_HOME}")
+    else()
+        set(ANDROID_NDK "/home/ubuntu/Android/Sdk/ndk/28.2.13676358")
+    endif()
+endif()
+
+set(ANDROID_ABI "arm64-v8a" CACHE STRING "Target ABI" FORCE)
+set(ANDROID_PLATFORM "android-30" CACHE STRING "Min API level" FORCE)
+set(ANDROID_STL "c++_static" CACHE STRING "C++ STL" FORCE)
+
+include("${ANDROID_NDK}/build/cmake/android.toolchain.cmake")
+
+set(ANDROID_NDK_HOST_TAG "linux-x86_64")
+set(ANDROID_NDK_LLVM_BIN "${ANDROID_NDK}/toolchains/llvm/prebuilt/${ANDROID_NDK_HOST_TAG}/bin" CACHE PATH "NDK LLVM bin")
+set(ANDROID_NDK_SYSROOT "${ANDROID_NDK}/toolchains/llvm/prebuilt/${ANDROID_NDK_HOST_TAG}/sysroot" CACHE PATH "NDK sysroot")
+set(ANDROID_RUST_TARGET "aarch64-linux-android" CACHE STRING "Rust target triple")
+set(ANDROID_NDK_API_CC "${ANDROID_NDK_LLVM_BIN}/aarch64-linux-android30-clang" CACHE FILEPATH "NDK API 30 C compiler")
+set(ANDROID_NDK_API_CXX "${ANDROID_NDK_LLVM_BIN}/aarch64-linux-android30-clang++" CACHE FILEPATH "NDK API 30 C++ compiler")
+set(ANDROID_NDK_AR "${ANDROID_NDK_LLVM_BIN}/llvm-ar" CACHE FILEPATH "NDK llvm-ar")
+set(ANDROID_NDK_RANLIB "${ANDROID_NDK_LLVM_BIN}/llvm-ranlib" CACHE FILEPATH "NDK llvm-ranlib")
+set(ANDROID_NDK_READELF "${ANDROID_NDK_LLVM_BIN}/llvm-readelf" CACHE FILEPATH "NDK llvm-readelf")
