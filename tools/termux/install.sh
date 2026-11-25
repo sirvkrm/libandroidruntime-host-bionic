@@ -149,8 +149,17 @@ case "$MODE" in
     exec java -cp "$SHARE_DIR/smoke-stubs.jar" android.layoutlib.test.SmokeTest "$LIB_DIR"
     ;;
   xml)
-    XML_FILE="${1:-$SHARE_DIR/test_layout.xml}"
-    OUT_PNG="${2:-${TMPDIR:-/tmp}/test_render.png}"
+    XML_FILE="$SHARE_DIR/test_layout.xml"
+    OUT_PNG="${TMPDIR:-/tmp}/test_render.png"
+    if [ "${1:-}" != "" ] && [[ "${1:-}" != --* ]]; then
+      XML_FILE="$1"
+      shift
+      if [ "${1:-}" != "" ] && [[ "${1:-}" != --* ]]; then
+        OUT_PNG="$1"
+        shift
+      fi
+    fi
+    EXTRA_ARGS=("$@")
     if ! command -v java >/dev/null 2>&1; then
       echo "[error] 'java' not found. Install OpenJDK first." >&2
       exit 1
@@ -322,10 +331,10 @@ case "$MODE" in
     [ -n "$RES_DIR" ] && ARGS+=(--res-dir "$RES_DIR")
     [ -n "$FONT_DIR" ] && ARGS+=(--font-dir "$FONT_DIR")
     [ -n "$ICU_FILE" ] && ARGS+=(--icu "$ICU_FILE")
-    exec "$JAVA_BIN" "${JAVA_FLAGS[@]}" -cp "$CP" RenderXmlTest "${ARGS[@]}"
+    exec "$JAVA_BIN" "${JAVA_FLAGS[@]}" -cp "$CP" RenderXmlTest "${ARGS[@]}" "${EXTRA_ARGS[@]}"
     ;;
   *)
-    echo "Usage: layoutlib-test [probe|smoke|xml [layout.xml] [out.png]]" >&2
+    echo "Usage: layoutlib-test [probe|smoke|xml [layout.xml] [out.png] [--details details.txt] [--theme ThemeName]]" >&2
     exit 2
     ;;
 esac

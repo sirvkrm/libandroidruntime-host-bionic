@@ -12,6 +12,7 @@ import com.android.ide.common.rendering.api.ResourceReference;
 import com.android.ide.common.rendering.api.ResourceValue;
 import com.android.ide.common.rendering.api.Result;
 import com.android.ide.common.rendering.api.SessionParams;
+import com.android.ide.common.rendering.api.ViewInfo;
 import com.android.ide.common.resources.ResourceRepository;
 import com.android.ide.common.resources.ResourceRepositoryUtil;
 import com.android.ide.common.resources.ResourceResolver;
@@ -51,6 +52,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -64,7 +67,12 @@ public class RenderXmlTest {
 
         @Override
         public Object getViewCookie() {
-            return null;
+            String name = getName();
+            if (name == null) {
+                return null;
+            }
+            String id = getAttributeValue("http://schemas.android.com/apk/res/android", "id");
+            return id != null ? name + " [" + id + "]" : name;
         }
 
         @Override
@@ -300,6 +308,7 @@ public class RenderXmlTest {
     public static void main(String[] args) throws Exception {
         String xmlPath = null;
         String outPath = "test_render.png";
+        String detailsPath = null;
         String dataDirPath = null;
         String resDirPath = null;
         String fontDirPath = null;
@@ -314,6 +323,7 @@ public class RenderXmlTest {
             switch (args[i]) {
                 case "--xml" -> xmlPath = args[++i];
                 case "--out" -> outPath = args[++i];
+                case "--details" -> detailsPath = args[++i];
                 case "--data-dir" -> dataDirPath = args[++i];
                 case "--res-dir" -> resDirPath = args[++i];
                 case "--font-dir" -> fontDirPath = args[++i];
@@ -446,6 +456,7 @@ public class RenderXmlTest {
                 36
         );
 
+        params.setExtendedViewInfoMode(true);
         params.setTimeout(50_000L);
         params.setAssetRepository(new AssetRepository());
 
@@ -504,6 +515,19 @@ public class RenderXmlTest {
             long ms = (System.nanoTime() - t0) / 1_000_000L;
             System.out.printf("[PASS] Rendered %s -> %s (%dx%d PNG, %d bytes, %d ms)%n",
                     xmlPath, outFile.getAbsolutePath(), img.getWidth(), img.getHeight(), outFile.length(), ms);
+            if (detailsPath != null && !detailsPath.isEmpty()) {
+                String report = buildRenderReport(
+                        xmlPath, outFile, img, ms, res, session, recObj,
+                        themeName, width, height, nativeDirPath, icuPath,
+                        fontDir != null ? fontDir.getAbsolutePath() : "",
+                        resDir != null ? resDir.getAbsolutePath() : "",
+                        buildProps);
+                File detailsFile = new File(detailsPath);
+                if (detailsFile.getParentFile() != null) Files.createDirectories(detailsFile.getParentFile().toPath());
+                Files.writeString(detailsFile.toPath(), report, StandardCharsets.UTF_8);
+                System.out.println("[PASS] Details saved -> " + detailsFile.getAbsolutePath());
+                System.out.println(report);
+            }
         } finally {
             if (recyclableCloseable != null) {
                 try {
@@ -569,5 +593,128 @@ public class RenderXmlTest {
             }
         }
         return null;
+    }
+
+    private static String buildRenderReport(
+            String xmlPath,
+            File outFile,
+            BufferedImage img,
+            long elapsedMs,
+            Result res,
+            RenderSession session,
+            Object recObj,
+            String themeName,
+            int targetWidth,
+            int targetHeight,
+            String nativeDirPath,
+            String icuPath,
+            String fontDirPath,
+            String resDirPath,
+            Map<String, String> buildProps) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== Layoutlib Render Details Report ===\n");
+        sb.append("xml_path         : ").append(xmlPath).append('\n');
+        sb.append("png_path         : ").append(outFile.getAbsolutePath()).append('\n');
+        sb.append("png_size_bytes   : ").append(outFile.length()).append('\n');
+        sb.append("render_time_ms   : ").append(elapsedMs).append('\n');
+        sb.append("result_status    : ").append(res.getStatus()).append('\n');
+        sb.append("session_class    : ").append(session.getClass().getName()).append('\n');
+        sb.append("image_source     : ").append(recObj != null ? recObj.getClass().getName() : "RenderSession.getImage()").append('\n');
+        sb.append("theme            : @android:style/").append(themeName).append('\n');
+        sb.append("viewport         : ").append(targetWidth).append('x').append(targetHeight).append('\n');
+        sb.append("bitmap_dims      : ").append(img.getWidth()).append('x').append(img.getHeight()).append('\n');
+        sb.append("bitmap_type      : ").append(img.getType()).append(" (BufferedImage.TYPE_INT_ARGB_PRE=3)\n");
+        sb.append("native_dir       : ").append(nativeDirPath).append('\n');
+        sb.append("icu_data         : ").append(icuPath).append('\n');
+        sb.append("font_dir         : ").append(fontDirPath).append('\n');
+        sb.append("res_dir          : ").append(resDirPath).append('\n');
+        sb.append("prop_sdk_int     : ").append(buildProps.get("ro.build.version.sdk"))
+                .append(" (release=").append(buildProps.get("ro.build.version.release"))
+                .append(", abi=").append(buildProps.get("ro.product.cpu.abilist64")).append(")\n");
+
+        int w = img.getWidth();
+        int h = img.getHeight();
+        long totalPx = (long) w * h;
+        long opaquePx = 0;
+        long transparentPx = 0;
+        Map<Integer, Long> colorCounts = new HashMap<>();
+        int[] row = new int[w];
+        for (int y = 0; y < h; y++) {
+            img.getRGB(0, y, w, 1, row, 0, w);
+            for (int x = 0; x < w; x++) {
+                int argb = row[x];
+                int a = (argb >>> 24) & 0xff;
+                if (a == 255) opaquePx++;
+                else if (a == 0) transparentPx++;
+                colorCounts.merge(argb, 1L, Long::sum);
+            }
+        }
+        sb.append("pixel_stats      : total=").append(totalPx)
+                .append(", opaque=").append(opaquePx)
+                .append(", transparent=").append(transparentPx)
+                .append(", unique_argb=").append(colorCounts.size()).append('\n');
+        sb.append("top_argb_colors  :");
+        colorCounts.entrySet().stream()
+                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                .limit(8)
+                .forEach(e -> sb.append(String.format(" #%08X(%d)", e.getKey(), e.getValue())));
+        sb.append("\n\n");
+
+        List<ViewInfo> rootViews = session.getRootViews();
+        sb.append("=== Content Root Views (").append(rootViews != null ? rootViews.size() : 0).append(") ===\n");
+        if (rootViews != null) {
+            for (ViewInfo vi : rootViews) {
+                dumpViewTree(sb, vi, 0);
+            }
+        }
+        sb.append('\n');
+
+        List<ViewInfo> sysViews = session.getSystemRootViews();
+        sb.append("=== System Decor & Window Views (").append(sysViews != null ? sysViews.size() : 0).append(") ===\n");
+        if (sysViews != null) {
+            for (ViewInfo vi : sysViews) {
+                dumpViewTree(sb, vi, 0);
+            }
+        }
+        return sb.toString();
+    }
+
+    private static void dumpViewTree(StringBuilder sb, ViewInfo vi, int depth) {
+        if (vi == null) return;
+        for (int i = 0; i < depth; i++) sb.append("  ");
+        int w = vi.getRight() - vi.getLeft();
+        int h = vi.getBottom() - vi.getTop();
+        sb.append("- ").append(vi.getClassName());
+        if (vi.getCookie() != null) {
+            sb.append(" {").append(vi.getCookie()).append('}');
+        }
+        sb.append(String.format(" bounds=[%d,%d,%d,%d] size=%dx%d",
+                vi.getLeft(), vi.getTop(), vi.getRight(), vi.getBottom(), w, h));
+        if (vi.getBaseLine() > 0) {
+            sb.append(" baseline=").append(vi.getBaseLine());
+        }
+        if (vi.getViewType() != null) {
+            sb.append(" type=").append(vi.getViewType());
+        }
+        Object viewObj = vi.getViewObject();
+        if (viewObj != null) {
+            try {
+                Method getText = viewObj.getClass().getMethod("getText");
+                Object txt = getText.invoke(viewObj);
+                if (txt != null && !txt.toString().isEmpty()) {
+                    String s = txt.toString().replace('\n', ' ');
+                    if (s.length() > 48) s = s.substring(0, 48) + "...";
+                    sb.append(" text=\"").append(s).append('"');
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        sb.append('\n');
+        List<ViewInfo> children = vi.getChildren();
+        if (children != null) {
+            for (ViewInfo child : children) {
+                dumpViewTree(sb, child, depth + 1);
+            }
+        }
     }
 }
