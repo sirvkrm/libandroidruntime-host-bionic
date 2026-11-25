@@ -219,8 +219,12 @@ case "$MODE" in
       [ -d "$JDIR/fonts" ] || [ -d "$JDIR/res" ] && DATA_DIR="$JDIR"
       [ -z "$DATA_DIR" ] && [ -d "$JDIR/../resources/layoutlib/data" ] && DATA_DIR="$(cd "$JDIR/../resources/layoutlib/data" && pwd)"
     fi
-    if [ -z "$RES_DIR" ] && [ -n "$DATA_DIR" ] && [ -d "$DATA_DIR/res" ]; then
-      RES_DIR="$DATA_DIR/res"
+    if [ -z "$RES_DIR" ] && [ -n "$DATA_DIR" ]; then
+      if [ -d "$DATA_DIR/res" ]; then
+        RES_DIR="$DATA_DIR/res"
+      elif [ -f "$DATA_DIR/framework_res.jar" ]; then
+        RES_DIR="$DATA_DIR/framework_res.jar"
+      fi
     fi
     if [ -z "$RES_DIR" ] && [ "${#SEARCH_LIST[@]}" -gt 0 ]; then
       RES_DIR="$(find "${SEARCH_LIST[@]}" -maxdepth 6 -type d -name "res" -path "*/platforms/android-*/data/res" 2>/dev/null | sort -V | tail -n 1 || true)"

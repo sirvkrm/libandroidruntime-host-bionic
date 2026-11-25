@@ -45,6 +45,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
@@ -57,6 +58,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class RenderXmlTest {
     private static class SimpleLayoutPullParser extends KXmlParser implements ILayoutPullParser {
@@ -161,13 +164,35 @@ public class RenderXmlTest {
         }
     }
 
-    private static Map<String, Map<String, Integer>> parseEnumMap(File attrsXml) {
+    private static Map<String, Map<String, Integer>> parseEnumMap(File resSource) {
         Map<String, Map<String, Integer>> map = new HashMap<>();
-        if (attrsXml == null || !attrsXml.isFile()) {
+        if (resSource == null || !resSource.exists()) {
             return map;
         }
         try {
-            Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(attrsXml);
+            Document doc = null;
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            if (resSource.isDirectory()) {
+                File attrsXml = new File(resSource, "values/attrs.xml");
+                if (attrsXml.isFile()) {
+                    doc = dbf.newDocumentBuilder().parse(attrsXml);
+                }
+            } else if (resSource.isFile() && resSource.getName().endsWith(".jar")) {
+                try (ZipFile zf = new ZipFile(resSource)) {
+                    ZipEntry ze = zf.getEntry("res/values/attrs.xml");
+                    if (ze == null) ze = zf.getEntry("values/attrs.xml");
+                    if (ze != null) {
+                        try (InputStream is = zf.getInputStream(ze)) {
+                            doc = dbf.newDocumentBuilder().parse(is);
+                        }
+                    }
+                }
+            } else if (resSource.isFile()) {
+                doc = dbf.newDocumentBuilder().parse(resSource);
+            }
+            if (doc == null) {
+                return map;
+            }
             NodeList attrs = doc.getElementsByTagName("attr");
             for (int i = 0; i < attrs.getLength(); i++) {
                 Element attrEl = (Element) attrs.item(i);
@@ -360,7 +385,7 @@ public class RenderXmlTest {
                 dataDir != null ? new File(dataDir, "layoutlib-build.prop") : null,
                 (resDir != null && resDir.getParentFile() != null && resDir.getParentFile().getParentFile() != null)
                         ? new File(resDir.getParentFile().getParentFile(), "build.prop") : null);
-        File attrsXml = resDir != null && resDir.isDirectory() ? new File(resDir, "values/attrs.xml") : null;
+        Map<String, Map<String, Integer>> enumMap = parseEnumMap(resDir);
 
         if (icuPath == null) {
             if (dataDir != null) {
@@ -404,7 +429,6 @@ public class RenderXmlTest {
 
         Bridge bridge = new Bridge();
         Map<String, String> buildProps = loadBuildProps(buildProp);
-        Map<String, Map<String, Integer>> enumMap = parseEnumMap(attrsXml);
         String hyphenPath = hyphenDir != null ? hyphenDir.getAbsolutePath() : "";
         String[] keyboardPaths = new String[0];
         boolean initOk = false;
@@ -459,6 +483,18 @@ public class RenderXmlTest {
         params.setExtendedViewInfoMode(true);
         params.setTimeout(50_000L);
         params.setAssetRepository(new AssetRepository());
+        try {
+            Class<?> flagsCls = Class.forName(
+                    "com.android.layoutlib.bridge.android.RenderParamsFlags",
+                    false,
+                    bridge.getClass().getClassLoader());
+            @SuppressWarnings("unchecked")
+            SessionParams.Key<String> maskKey = (SessionParams.Key<String>)
+                    flagsCls.getField("FLAG_KEY_ADAPTIVE_ICON_MASK_PATH").get(null);
+            params.setFlag(maskKey,
+                    "M50,0 C10,0 0,10 0,50 0,90 10,100 50,100 90,100 100,90 100,50 100,10 90,0 50,0 Z");
+        } catch (Throwable ignored) {
+        }
 
         long t0 = System.nanoTime();
         RenderSession session = bridge.createSession(params);
@@ -542,6 +578,7 @@ public class RenderXmlTest {
                 }
             }
         }
+        System.exit(0);
     }
 
     private static Object tryGetRecyclableImage(RenderSession session) {
