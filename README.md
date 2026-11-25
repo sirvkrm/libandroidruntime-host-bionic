@@ -10,7 +10,7 @@
 [![Toolchain](https://img.shields.io/badge/NDK-r28c%20%7C%20Clang%2019%20%7C%20CMake-6D28D9?style=flat-square)](cmake/toolchain.cmake)
 [![Release](https://img.shields.io/github/v/release/sirvkrm/libandroidruntime-host-bionic?style=flat-square&label=Prebuilts&color=0EA5E9)](https://github.com/sirvkrm/libandroidruntime-host-bionic/releases)
 
-[Quick Install](#quick-install-termux) · [Proof of Work](#proof-of-work) · [Verified ELF Output](#verified-elf--api-30-results) · [Build Architecture](#build-architecture) · [Build Notes](notes/) · [Main IDE Installer](https://github.com/sirvkrm/AndroidStudio-For-Android)
+[Quick Install](#quick-install-termux) · [Proof of Work](#proof-of-work) · [Verified ELF Output](#verified-elf--api-30-results) · [Build Architecture](#build-architecture) · [Build Notes](notes/) · [Main IDE Installer](https://github.com/sirvkrm/androidstudio-bionic-termux)
 
 </div>
 
@@ -38,7 +38,7 @@ Running live inside Android Studio Rabbit 1 (`2026.2.1.8`) directly on Termux Bi
 
 ## Quick Install (Termux)
 
-If you want the complete Android Studio + SDK + NDK + Skiko + Layoutlib Bionic setup, use the interactive installer in [**sirvkrm/AndroidStudio-For-Android**](https://github.com/sirvkrm/AndroidStudio-For-Android).
+If you want the complete Android Studio + SDK + NDK + Skiko + Layoutlib Bionic setup, use the interactive installer in [**sirvkrm/androidstudio-bionic-termux**](https://github.com/sirvkrm/androidstudio-bionic-termux).
 
 To install or update only the **precompiled ARM64 Bionic Layoutlib native binaries** and standalone CLI test harness (`layoutlib-test`) on Termux:
 
@@ -101,6 +101,6 @@ All Soong `Android.bp` graphs were analyzed via [`tools/bp_mapper.py`](tools/bp_
 
 ## Related Repositories
 
-- [**sirvkrm/AndroidStudio-For-Android**](https://github.com/sirvkrm/AndroidStudio-For-Android) — Interactive 1-command Termux installer bundling Rabbit 1 IDE, SDK, NDK, `aapt2`, Skiko, and this Layoutlib runtime.
+- [**sirvkrm/androidstudio-bionic-termux**](https://github.com/sirvkrm/androidstudio-bionic-termux) — Interactive 1-command Termux installer bundling Rabbit 1 IDE, SDK, NDK, `aapt2`, Skiko, and this Layoutlib runtime.
 - [**sirvkrm/AndroidStudio-Bionic-Libs**](https://github.com/sirvkrm/AndroidStudio-Bionic-Libs) — Native Bionic `fsnotifier`, `pty4j`, `libutil`, `jna`, `sqlite-jdbc`, `skiko`, and `studio-bionic-fs.jar` file-chooser agent.
 - [**sirvkrm/skiko-android**](https://github.com/sirvkrm/skiko-android) — JetBrains Skiko (`bionic-v0.144.5`) adapted for Termux Bionic OpenJDK & X11/OpenGL rendering.
