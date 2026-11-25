@@ -39,8 +39,33 @@ cleanup() { rm -rf "$TMP_DIR"; }
 trap cleanup EXIT
 
 echo "=== Downloading ARM64 Host-Bionic Layoutlib artifacts from $BASE_URL ==="
+echo "  -> fetching SHA256SUMS"
+curl -fsSL --retry 3 --retry-delay 2 "$BASE_URL/SHA256SUMS" -o "$TMP_DIR/SHA256SUMS"
+
+reuse_or_fetch() {
+  local f="$1"
+  local expected existing mapped got
+  expected="$(awk -v fn="$f" '$2 == fn {print $1; exit}' "$TMP_DIR/SHA256SUMS")"
+  mapped="$f"
+  [ "$f" = "layoutlib_native_probe" ] && mapped="layoutlib-probe"
+  for existing in \
+    "$PREFIX/lib/layoutlib/$f" \
+    "$PREFIX/share/layoutlib-bionic/$f" \
+    "$PREFIX/bin/$mapped"; do
+    if [ -n "$expected" ] && [ -f "$existing" ]; then
+      got="$(sha256sum "$existing" | awk '{print $1}')"
+      if [ "$got" = "$expected" ]; then
+        cp -f "$existing" "$TMP_DIR/$f"
+        echo "  -> cached  $f (sha256 match)"
+        return 0
+      fi
+    fi
+  done
+  echo "  -> fetching $f"
+  curl -fsSL --retry 3 --retry-delay 2 "$BASE_URL/$f" -o "$TMP_DIR/$f"
+}
+
 FILES=(
-  "SHA256SUMS"
   "libandroid_runtime.so"
   "layoutlib_jni.so"
   "layoutlib_native_probe"
@@ -52,8 +77,7 @@ FILES=(
 )
 
 for f in "${FILES[@]}"; do
-  echo "  -> fetching $f"
-  curl -fsSL --retry 3 --retry-delay 2 "$BASE_URL/$f" -o "$TMP_DIR/$f"
+  reuse_or_fetch "$f"
 done
 
 echo "=== Verifying SHA256 checksums ==="
