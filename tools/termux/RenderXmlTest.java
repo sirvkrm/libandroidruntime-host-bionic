@@ -45,6 +45,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -532,15 +533,41 @@ public class RenderXmlTest {
     }
 
     private static BufferedImage extractBufferedImage(Object recImg) {
+        if (recImg == null) return null;
         try {
-            Class<?> recCls = Class.forName("com.android.ide.common.rendering.api.RecyclableImage");
-            Method m = recCls.getMethod("getImage");
-            return (BufferedImage) m.invoke(recImg);
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            return null;
+            Class<?> recCls = Class.forName(
+                    "com.android.ide.common.rendering.api.RecyclableImage",
+                    false,
+                    recImg.getClass().getClassLoader());
+            try {
+                Method isValidM = recCls.getMethod("isValid");
+                if (!Boolean.TRUE.equals(isValidM.invoke(recImg))) {
+                    return null;
+                }
+            } catch (NoSuchMethodException ignored) {
+            }
+            for (String mName : new String[]{"getCopy", "getImage"}) {
+                try {
+                    Method m = recCls.getMethod(mName);
+                    BufferedImage bi = (BufferedImage) m.invoke(recImg);
+                    if (bi != null) return bi;
+                } catch (NoSuchMethodException ignored) {
+                }
+            }
+        } catch (ClassNotFoundException ignored) {
         } catch (Throwable t) {
-            System.err.println("[warn] RecyclableImage.getImage() failed: " + t);
-            return null;
+            System.err.println("[warn] RecyclableImage reflection failed: " + t);
         }
+        if (Modifier.isPublic(recImg.getClass().getModifiers())) {
+            for (String mName : new String[]{"getImage", "getCopy"}) {
+                try {
+                    Method m = recImg.getClass().getMethod(mName);
+                    BufferedImage bi = (BufferedImage) m.invoke(recImg);
+                    if (bi != null) return bi;
+                } catch (Throwable ignored) {
+                }
+            }
+        }
+        return null;
     }
 }
