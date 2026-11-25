@@ -38,7 +38,10 @@ Compiled and linked the final top-level Android Studio Layoutlib shared librarie
 6. **Cross-Version Layoutlib Compatibility & Termux Test Tooling (`tools/termux/`)**
    - Guarded Android 17's `android/content/res/XmlBlock$FlagInfo` lookup inside `android_util_XmlBlock.cpp` (`LAYOUTLIB_HOST`) and updated `HostRuntime.cpp` / `hwui/apex/LayoutlibLoader.cpp` `register_jni_procs` to warn and skip unmapped legacy JNI class entries (such as `android.os.Trace`) rather than aborting subsequent `register_android_graphics_classes()`.
    - Saved Termux installer and CLI test harness sources (`install.sh`, `layoutlib_native_probe.cpp`, `smoke_java/`, `RenderXmlTest.java`, `test_layout.xml`) under `tools/termux/`.
-   - Verified on real Termux device (`layoutlib-test smoke`): `dlopen(..., RTLD_NOW)` resolved `libandroid_runtime.so` via `$ORIGIN`, `JNI_OnLoad` initialized in Termux OpenJDK, `HostProperties` `ro.*` set/get succeeded, and `android.util.Log` JNI succeeded.
+   - Verified on real Termux device (`aarch64 Android`):
+     - `layoutlib-test smoke`: `dlopen(..., RTLD_NOW)` resolved `libandroid_runtime.so` via `$ORIGIN`, `JNI_OnLoad` initialized in Termux OpenJDK, `HostProperties` `ro.*` set/get succeeded, and `android.util.Log` JNI succeeded.
+     - `layoutlib-test xml` (using `~/android-studio-latest` with `icudt78l.dat` + `android-37.0` resources + `~/android-studio/jbr/bin/java` v25): initialized `Bridge.init()`, inflated & rendered `test_layout.xml` via `RecyclableImage.getCopy()`, and wrote `/data/data/com.termux/files/usr/tmp/test_render.png` (`1080x1920` RGBA PNG, `55,760` bytes, `959` unique colors, in `2,811–2,914 ms`).
+     - Note: older `~/android-studio` (`icudt72l.dat`) fails JNI registration at `android.view.KeyCharacterMap.nativeObtainMapWithOverlay` because our AOSP 17 (`android-17.0.0_r1`) native runtime targets the Android 17 Java API present in `~/android-studio-latest`.
 
 ---
 
