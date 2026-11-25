@@ -1,5 +1,6 @@
 import com.android.ide.common.rendering.api.ActionBarCallback;
 import com.android.ide.common.rendering.api.AdapterBinding;
+import com.android.ide.common.rendering.api.AssetRepository;
 import com.android.ide.common.rendering.api.HardwareConfig;
 import com.android.ide.common.rendering.api.ILayoutLog;
 import com.android.ide.common.rendering.api.ILayoutPullParser;
@@ -444,17 +445,57 @@ public class RenderXmlTest {
                 36
         );
 
+        params.setTimeout(50_000L);
+        params.setAssetRepository(new AssetRepository());
+
         long t0 = System.nanoTime();
         RenderSession session = bridge.createSession(params);
+        AutoCloseable recyclableCloseable = null;
         try {
-            Result res = session.getResult();
-            if (!res.isSuccess()) {
-                if (res.getException() != null) res.getException().printStackTrace(System.err);
-                throw new IllegalStateException("Layout render failed: " + res.getErrorMessage());
+            Result res = session != null ? session.getResult() : null;
+            if (res == null || !res.isSuccess()) {
+                if (res != null && res.getException() != null) res.getException().printStackTrace(System.err);
+                throw new IllegalStateException("Layout createSession failed: "
+                        + (res != null ? res.getStatus() + " " + res.getErrorMessage() : "null result"));
             }
-            BufferedImage img = session.getImage();
+
+            BufferedImage img = null;
+            Object recObj = tryGetRecyclableImage(session);
+            if (recObj != null) {
+                img = extractBufferedImage(recObj);
+                if (img != null) {
+                    if (recObj instanceof AutoCloseable ac) recyclableCloseable = ac;
+                } else if (recObj instanceof AutoCloseable ac) {
+                    try { ac.close(); } catch (Throwable ignored) {}
+                }
+            }
             if (img == null) {
-                throw new IllegalStateException("Rendered image was null!");
+                img = session.getImage();
+            }
+            if (img == null) {
+                res = session.render(50_000L);
+                if (res == null || !res.isSuccess()) {
+                    if (res != null && res.getException() != null) res.getException().printStackTrace(System.err);
+                    throw new IllegalStateException("Layout render() failed: "
+                            + (res != null ? res.getStatus() + " " + res.getErrorMessage() : "null result"));
+                }
+                recObj = tryGetRecyclableImage(session);
+                if (recObj != null) {
+                    if (recObj instanceof AutoCloseable ac) recyclableCloseable = ac;
+                    img = extractBufferedImage(recObj);
+                }
+                if (img == null) {
+                    img = session.getImage();
+                }
+            }
+            if (img == null) {
+                throw new IllegalStateException(
+                        "Rendered image was null! sessionClass=" + session.getClass().getName()
+                                + " status=" + res.getStatus()
+                                + " msg=" + res.getErrorMessage()
+                                + " recObj=" + recObj
+                                + " rootViews=" + (session.getRootViews() != null ? session.getRootViews().size() : -1)
+                                + " sysRootViews=" + (session.getSystemRootViews() != null ? session.getSystemRootViews().size() : -1));
             }
             File outFile = new File(outPath);
             if (outFile.getParentFile() != null) Files.createDirectories(outFile.getParentFile().toPath());
@@ -463,12 +504,43 @@ public class RenderXmlTest {
             System.out.printf("[PASS] Rendered %s -> %s (%dx%d PNG, %d bytes, %d ms)%n",
                     xmlPath, outFile.getAbsolutePath(), img.getWidth(), img.getHeight(), outFile.length(), ms);
         } finally {
+            if (recyclableCloseable != null) {
+                try {
+                    recyclableCloseable.close();
+                } catch (Throwable ignored) {
+                }
+            }
             if (session != null) {
                 try {
                     session.dispose();
                 } catch (Throwable ignored) {
                 }
             }
+        }
+    }
+
+    private static Object tryGetRecyclableImage(RenderSession session) {
+        try {
+            Method m = RenderSession.class.getMethod("getRecyclableImage");
+            return m.invoke(session);
+        } catch (NoSuchMethodException e) {
+            return null;
+        } catch (Throwable t) {
+            System.err.println("[warn] getRecyclableImage() failed: " + t);
+            return null;
+        }
+    }
+
+    private static BufferedImage extractBufferedImage(Object recImg) {
+        try {
+            Class<?> recCls = Class.forName("com.android.ide.common.rendering.api.RecyclableImage");
+            Method m = recCls.getMethod("getImage");
+            return (BufferedImage) m.invoke(recImg);
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
+            return null;
+        } catch (Throwable t) {
+            System.err.println("[warn] RecyclableImage.getImage() failed: " + t);
+            return null;
         }
     }
 }
