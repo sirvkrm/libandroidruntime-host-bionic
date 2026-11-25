@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASE_URL="${LAYOUTLIB_URL:-https://veterans-realtor-argument-indication.trycloudflare.com}"
+BASE_URL="${LAYOUTLIB_URL:-https://github.com/sirvkrm/libandroidruntime-host-bionic/releases/download/android-17.0.0_r1-bionic-v1}"
 PREFIX="${PREFIX:-/data/data/com.termux/files/usr}"
 CUSTOM_DIR=""
 
@@ -167,7 +167,7 @@ case "$MODE" in
   smoke)
     "$PREFIX/bin/layoutlib-probe" "$LIB_DIR"
     if ! command -v java >/dev/null 2>&1; then
-      echo "[warn] 'java' not found. Native dlopen/symbol probe passed; install OpenJDK ('pkg install openjdk-17') to run JVM JNI test."
+      echo "[warn] 'java' not found. Native dlopen/symbol probe passed; install OpenJDK ('pkg install openjdk-25') to run JVM JNI test."
       exit 0
     fi
     exec java -cp "$SHARE_DIR/smoke-stubs.jar" android.layoutlib.test.SmokeTest "$LIB_DIR"
