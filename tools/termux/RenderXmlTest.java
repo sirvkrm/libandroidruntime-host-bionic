@@ -43,8 +43,10 @@ import org.xmlpull.v1.XmlPullParser;
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -58,14 +60,94 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class RenderXmlTest {
+    private static final Map<String, JarFile> sJarCache = new ConcurrentHashMap<>();
+
+    private static InputStream openJarOrFileStream(String path) throws IOException {
+        if (path == null) {
+            return null;
+        }
+        if (path.startsWith("jar:")) {
+            int idx = path.indexOf("!/");
+            if (idx != -1) {
+                String jarPath = path.startsWith("jar:file:") ? path.substring(9, idx) : path.substring(4, idx);
+                String entryPath = path.substring(idx + 2);
+                JarFile jf = sJarCache.computeIfAbsent(jarPath, p -> {
+                    try {
+                        return new JarFile(p);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                JarEntry je = jf.getJarEntry(entryPath);
+                if (je != null) {
+                    try (InputStream is = jf.getInputStream(je)) {
+                        return new ByteArrayInputStream(is.readAllBytes());
+                    }
+                }
+            }
+            return null;
+        }
+        File f = new File(path);
+        return f.isFile() ? new FileInputStream(f) : null;
+    }
+
+    private static boolean hasJarOrFile(String path) {
+        if (path == null) return false;
+        if (path.startsWith("jar:")) {
+            int idx = path.indexOf("!/");
+            if (idx != -1) {
+                String jarPath = path.startsWith("jar:file:") ? path.substring(9, idx) : path.substring(4, idx);
+                String entryPath = path.substring(idx + 2);
+                try {
+                    JarFile jf = sJarCache.computeIfAbsent(jarPath, p -> {
+                        try {
+                            return new JarFile(p);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+                    return jf.getJarEntry(entryPath) != null;
+                } catch (Throwable ignored) {
+                    return false;
+                }
+            }
+            return false;
+        }
+        return new File(path).isFile();
+    }
+
+    private static class JarAwareAssetRepository extends AssetRepository {
+        @Override
+        public boolean isSupported() {
+            return true;
+        }
+
+        @Override
+        public InputStream openNonAsset(int cookie, String path, int mode) throws IOException {
+            return openJarOrFileStream(path);
+        }
+
+        @Override
+        public boolean isFileResource(String path) {
+            return hasJarOrFile(path) || super.isFileResource(path);
+        }
+    }
+
     private static class SimpleLayoutPullParser extends KXmlParser implements ILayoutPullParser {
         SimpleLayoutPullParser(File xmlFile) throws Exception {
+            this(new FileInputStream(xmlFile));
+        }
+
+        SimpleLayoutPullParser(InputStream is) throws Exception {
             setFeature(FEATURE_PROCESS_NAMESPACES, true);
-            setInput(new FileInputStream(xmlFile), StandardCharsets.UTF_8.name());
+            setInput(is, StandardCharsets.UTF_8.name());
         }
 
         @Override
@@ -118,7 +200,13 @@ public class RenderXmlTest {
 
         @Override
         public ILayoutPullParser getParser(ResourceValue layoutResource) {
-            return null;
+            if (layoutResource == null) return null;
+            try {
+                InputStream is = openJarOrFileStream(layoutResource.getValue());
+                return is != null ? new SimpleLayoutPullParser(is) : null;
+            } catch (Exception e) {
+                return null;
+            }
         }
 
         @Override
@@ -133,15 +221,17 @@ public class RenderXmlTest {
 
         @Override
         public XmlPullParser createXmlParserForPsiFile(String fileName) {
-            return null;
+            return createXmlParserForFile(fileName);
         }
 
         @Override
         public XmlPullParser createXmlParserForFile(String fileName) {
             try {
+                InputStream is = openJarOrFileStream(fileName);
+                if (is == null) return null;
                 KXmlParser p = new KXmlParser();
                 p.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, true);
-                p.setInput(new FileInputStream(fileName), StandardCharsets.UTF_8.name());
+                p.setInput(is, StandardCharsets.UTF_8.name());
                 return p;
             } catch (Exception e) {
                 return null;
@@ -482,7 +572,7 @@ public class RenderXmlTest {
 
         params.setExtendedViewInfoMode(true);
         params.setTimeout(50_000L);
-        params.setAssetRepository(new AssetRepository());
+        params.setAssetRepository(new JarAwareAssetRepository());
         try {
             Class<?> flagsCls = Class.forName(
                     "com.android.layoutlib.bridge.android.RenderParamsFlags",
